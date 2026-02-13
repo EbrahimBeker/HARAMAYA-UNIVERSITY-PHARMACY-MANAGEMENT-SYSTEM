@@ -1,0 +1,14 @@
+{
+  "name": "haramaya-pharmacy-system",
+  "version": "1.0.0",
+  "description": "Haramaya University Pharmacy Management System",
+  "scripts": {
+    "install-api": "cd api && npm install",
+    "start": "cd api && npm start",
+    "dev": "cd api && npm run dev",
+    "setup": "npm run install-api && cd api && mysql -u root -p < database.sql"
+  },
+  "keywords": ["pharmacy", "healthcare", "inventory"],
+  "author": "Haramaya University",
+  "license": "ISC"
+}

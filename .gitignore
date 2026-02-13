@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+api/node_modules/
+
+# Environment variables
+.env
+api/.env
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# Build
+dist/
+build/
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
