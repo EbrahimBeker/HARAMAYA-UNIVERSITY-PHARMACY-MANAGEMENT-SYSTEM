@@ -35,39 +35,6 @@ const Navbar = () => {
               </Link>
             )}
 
-            {hasAnyRole(['Physician']) && (
-              <>
-                <Link to="/patient-diagnosis" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                  <Stethoscope size={18} />
-                  <span>Diagnosis</span>
-                </Link>
-                <Link to="/prescriptions" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                  <ClipboardList size={18} />
-                  <span>Prescriptions</span>
-                </Link>
-              </>
-            )}
-
-            {hasAnyRole(['Pharmacist']) && (
-              <Link to="/prescriptions" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                <ClipboardList size={18} />
-                <span>Prescriptions</span>
-              </Link>
-            )}
-
-            {hasAnyRole(['Drug Supplier']) && (
-              <>
-                <Link to="/supplier-dashboard" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                  <LayoutDashboard size={18} />
-                  <span>My Dashboard</span>
-                </Link>
-                <Link to="/purchase-orders" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                  <ShoppingCart size={18} />
-                  <span>Orders</span>
-                </Link>
-              </>
-            )}
-
             {hasAnyRole(['System Administrator', 'Pharmacist']) && (
               <Link to="/suppliers" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
                 <Package size={18} />
@@ -76,16 +43,10 @@ const Navbar = () => {
             )}
 
             {hasAnyRole(['System Administrator']) && (
-              <>
-                <Link to="/purchase-orders" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                  <ShoppingCart size={18} />
-                  <span>Orders</span>
-                </Link>
-                <Link to="/users" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                  <Users size={18} />
-                  <span>Users</span>
-                </Link>
-              </>
+              <Link to="/users" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <Users size={18} />
+                <span>Users</span>
+              </Link>
             )}
 
             {hasAnyRole(['System Administrator', 'Pharmacist', 'Data Clerk / Cashier', 'Drug Supplier']) && (
