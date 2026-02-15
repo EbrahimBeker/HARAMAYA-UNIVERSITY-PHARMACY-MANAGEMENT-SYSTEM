@@ -17,10 +17,10 @@ exports.getAll = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { name, description } = req.body;
+    const { name } = req.body;
     const [result] = await db.execute(
-      'INSERT INTO medicine_categories (name, description) VALUES (?, ?)',
-      [name, description || null]
+      'INSERT INTO medicine_categories (name) VALUES (?)',
+      [name]
     );
     const [category] = await db.execute('SELECT * FROM medicine_categories WHERE id = ?', [result.insertId]);
     res.status(201).json({ message: 'Category created successfully', category: category[0] });
@@ -32,16 +32,12 @@ exports.create = async (req, res, next) => {
 exports.update = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, description } = req.body;
+    const { name } = req.body;
     const updates = [];
     const params = [];
     if (name) {
       updates.push('name = ?');
       params.push(name);
-    }
-    if (description !== undefined) {
-      updates.push('description = ?');
-      params.push(description);
     }
     if (updates.length > 0) {
       params.push(id);

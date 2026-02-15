@@ -1,9 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, User, Home, Pill, Users, Package, FileText } from 'lucide-react';
+import { useConnectionStatus } from '../../hooks/useConnectionStatus';
+import { LogOut, User, Home, Pill, Users, Package, FileText, Wifi, WifiOff } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout, hasAnyRole } = useAuth();
+  const { isConnected } = useConnectionStatus();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -20,44 +22,100 @@ const Navbar = () => {
             <span className="text-xl font-semibold">Haramaya Pharmacy</span>
           </Link>
 
-          <div className="flex items-center gap-2">
-            <Link to="/" className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+          <div className="flex items-center gap-1">
+            <Link to="/dashboard" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
               <Home size={18} />
               <span>Dashboard</span>
             </Link>
 
-            <Link to="/medicines" className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-              <Pill size={18} />
-              <span>Medicines</span>
-            </Link>
+            {hasAnyRole(['System Administrator', 'Pharmacist', 'Data Clerk / Cashier', 'Ward Nurse']) && (
+              <Link to="/medicines" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <Pill size={18} />
+                <span>Medicines</span>
+              </Link>
+            )}
+
+            {hasAnyRole(['Physician']) && (
+              <>
+                <Link to="/patient-diagnosis" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                  <Stethoscope size={18} />
+                  <span>Diagnosis</span>
+                </Link>
+                <Link to="/prescriptions" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                  <ClipboardList size={18} />
+                  <span>Prescriptions</span>
+                </Link>
+              </>
+            )}
+
+            {hasAnyRole(['Pharmacist']) && (
+              <Link to="/prescriptions" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <ClipboardList size={18} />
+                <span>Prescriptions</span>
+              </Link>
+            )}
+
+            {hasAnyRole(['Drug Supplier']) && (
+              <>
+                <Link to="/supplier-dashboard" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                  <LayoutDashboard size={18} />
+                  <span>My Dashboard</span>
+                </Link>
+                <Link to="/purchase-orders" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                  <ShoppingCart size={18} />
+                  <span>Orders</span>
+                </Link>
+              </>
+            )}
 
             {hasAnyRole(['System Administrator', 'Pharmacist']) && (
-              <Link to="/suppliers" className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+              <Link to="/suppliers" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
                 <Package size={18} />
                 <span>Suppliers</span>
               </Link>
             )}
 
             {hasAnyRole(['System Administrator']) && (
-              <Link to="/users" className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                <Users size={18} />
-                <span>Users</span>
-              </Link>
+              <>
+                <Link to="/purchase-orders" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                  <ShoppingCart size={18} />
+                  <span>Orders</span>
+                </Link>
+                <Link to="/users" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                  <Users size={18} />
+                  <span>Users</span>
+                </Link>
+              </>
             )}
 
-            <Link to="/reports" className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-              <FileText size={18} />
-              <span>Reports</span>
-            </Link>
+            {hasAnyRole(['System Administrator', 'Pharmacist', 'Data Clerk / Cashier', 'Drug Supplier']) && (
+              <Link to="/reports" className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <FileText size={18} />
+                <span>Reports</span>
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm">
-              <User size={18} />
-              <span>{user?.full_name}</span>
-              <span className="px-2 py-1 bg-gray-700 rounded-full text-xs text-gray-300">
-                {user?.roles?.[0]}
-              </span>
+            <div className="flex items-center gap-3">
+              {/* Connection Status */}
+              <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
+                isConnected 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {isConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
+                <span>{isConnected ? 'Connected' : 'Offline'}</span>
+              </div>
+
+              {/* User Info */}
+              <div className="flex items-center gap-2 text-sm">
+                <User size={18} />
+                <span>{user?.full_name}</span>
+                <span className="px-2 py-1 bg-gray-700 rounded-full text-xs text-gray-300">
+                  {user?.roles?.[0]}
+                </span>
+              </div>
             </div>
             <button 
               onClick={handleLogout} 

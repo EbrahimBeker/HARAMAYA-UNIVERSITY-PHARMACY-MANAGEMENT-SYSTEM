@@ -87,4 +87,9 @@ export const suppliersAPI = {
   delete: (id) => api.delete(`/suppliers/${id}`),
 };
 
+// Roles API
+export const rolesAPI = {
+  getAll: () => api.get('/roles'),
+};
+
 export default api;
