@@ -1,5 +1,5 @@
-require('dotenv').config();
-const mysql = require('mysql2/promise');
+require("dotenv").config();
+const mysql = require("mysql2/promise");
 
 async function seedData() {
   const connection = await mysql.createConnection({
@@ -7,16 +7,18 @@ async function seedData() {
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
   });
 
   try {
-    console.log('🌱 Seeding sample data...\n');
+    console.log("🌱 Seeding sample data...\n");
 
     // Check if data already exists
-    const [existingCategories] = await connection.query('SELECT COUNT(*) as count FROM medicine_categories');
+    const [existingCategories] = await connection.query(
+      "SELECT COUNT(*) as count FROM medicine_categories",
+    );
     if (existingCategories[0].count > 0) {
-      console.log('⚠️  Sample data already exists. Skipping...');
+      console.log("⚠️  Sample data already exists. Skipping...");
       await connection.end();
       return;
     }
@@ -32,7 +34,7 @@ async function seedData() {
       ('Gastrointestinal'),
       ('Vitamins & Supplements')
     `);
-    console.log('✅ Medicine categories added');
+    console.log("✅ Medicine categories added");
 
     // Insert Medicine Types
     await connection.query(`
@@ -45,7 +47,7 @@ async function seedData() {
       ('Drops'),
       ('Inhaler')
     `);
-    console.log('✅ Medicine types added');
+    console.log("✅ Medicine types added");
 
     // Insert Suppliers
     await connection.query(`
@@ -54,7 +56,7 @@ async function seedData() {
       ('PharmaDistributors Ltd', 'Tigist Alemu', 'info@pharmadist.et', '+251922345678', 'Dire Dawa, Ethiopia', 1),
       ('HealthCare Suppliers', 'Dawit Tesfaye', 'sales@healthcare.et', '+251933456789', 'Harar, Ethiopia', 1)
     `);
-    console.log('✅ Suppliers added');
+    console.log("✅ Suppliers added");
 
     // Insert Sample Medicines
     await connection.query(`
@@ -68,20 +70,20 @@ async function seedData() {
       ('Ciprofloxacin', 'Ciprofloxacin', 1, 1, '500mg', 'tablet', 30, 25.00, 1),
       ('Metformin', 'Metformin HCl', 5, 1, '500mg', 'tablet', 50, 20.00, 1)
     `);
-    console.log('✅ Sample medicines added');
+    console.log("✅ Sample medicines added");
 
     // Initialize stock inventory for medicines
     await connection.query(`
       INSERT INTO stock_inventory (medicine_id, quantity_available)
       SELECT id, FLOOR(RAND() * 100) + 20 FROM medicines
     `);
-    console.log('✅ Stock inventory initialized');
+    console.log("✅ Stock inventory initialized");
 
-    console.log('\n✅ Sample data seeded successfully!\n');
+    console.log("\n✅ Sample data seeded successfully!\n");
 
     await connection.end();
   } catch (error) {
-    console.error('❌ Error seeding data:', error.message);
+    console.error("❌ Error seeding data:", error.message);
     await connection.end();
     process.exit(1);
   }

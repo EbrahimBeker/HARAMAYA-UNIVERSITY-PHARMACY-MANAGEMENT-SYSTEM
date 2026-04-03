@@ -5,9 +5,17 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "setup": "node setup-simple.js",
+    "setup:rbac": "node setup-rbac.js",
+    "seed:users": "node seed-users.js",
+    "seed:data": "node seed-complete-data.js"
   },
-  "keywords": ["pharmacy", "healthcare", "inventory"],
+  "keywords": [
+    "pharmacy",
+    "healthcare",
+    "inventory"
+  ],
   "author": "Haramaya University",
   "license": "ISC",
   "dependencies": {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export const useFetch = (apiFunc, dependencies = []) => {
   const [data, setData] = useState(null);
@@ -6,13 +6,13 @@ export const useFetch = (apiFunc, dependencies = []) => {
   const [error, setError] = useState(null);
 
   const refetch = async () => {
-    try {   
+    try {
       setLoading(true);
       setError(null);
       const response = await apiFunc();
       setData(response.data);
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred');
+      setError(err.response?.data?.message || "An error occurred");
     } finally {
       setLoading(false);
     }

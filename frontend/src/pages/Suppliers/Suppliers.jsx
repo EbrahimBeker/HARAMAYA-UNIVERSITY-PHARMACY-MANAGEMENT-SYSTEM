@@ -1,26 +1,35 @@
-import { useState, useEffect } from 'react';
-import { suppliersAPI } from '../../services/api';
-import { toast } from 'react-toastify';
-import { Plus, Edit, Trash2, Search, Phone, Mail, MapPin, Package } from 'lucide-react';
-import Modal from '../../components/Common/Modal';
-import Loading from '../../components/Common/Loading';
-import { useAuth } from '../../context/AuthContext';
+import { useState, useEffect } from "react";
+import { suppliersAPI } from "../../services/api";
+import { toast } from "react-toastify";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
+  Phone,
+  Mail,
+  MapPin,
+  Package,
+} from "lucide-react";
+import Modal from "../../components/Common/Modal";
+import Loading from "../../components/Common/Loading";
+import { useAuth } from "../../context/AuthContext";
 
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const { hasAnyRole } = useAuth();
 
   const [formData, setFormData] = useState({
-    name: '',
-    contact_person: '',
-    email: '',
-    phone: '',
-    address: '',
-    is_active: true
+    name: "",
+    contact_person: "",
+    email: "",
+    phone: "",
+    address: "",
+    is_active: true,
   });
 
   useEffect(() => {
@@ -32,7 +41,7 @@ const Suppliers = () => {
       const response = await suppliersAPI.getAll();
       setSuppliers(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to fetch suppliers');
+      toast.error("Failed to fetch suppliers");
     } finally {
       setLoading(false);
     }
@@ -43,26 +52,26 @@ const Suppliers = () => {
     try {
       if (editingSupplier) {
         await suppliersAPI.update(editingSupplier.id, formData);
-        toast.success('Supplier updated successfully');
+        toast.success("Supplier updated successfully");
       } else {
         await suppliersAPI.create(formData);
-        toast.success('Supplier created successfully');
+        toast.success("Supplier created successfully");
       }
       fetchSuppliers();
       closeModal();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Operation failed');
+      toast.error(error.response?.data?.message || "Operation failed");
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this supplier?')) {
+    if (window.confirm("Are you sure you want to delete this supplier?")) {
       try {
         await suppliersAPI.delete(id);
-        toast.success('Supplier deleted successfully');
+        toast.success("Supplier deleted successfully");
         fetchSuppliers();
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Delete failed');
+        toast.error(error.response?.data?.message || "Delete failed");
       }
     }
   };
@@ -72,21 +81,21 @@ const Suppliers = () => {
       setEditingSupplier(supplier);
       setFormData({
         name: supplier.name,
-        contact_person: supplier.contact_person || '',
-        email: supplier.email || '',
+        contact_person: supplier.contact_person || "",
+        email: supplier.email || "",
         phone: supplier.phone,
-        address: supplier.address || '',
-        is_active: supplier.is_active
+        address: supplier.address || "",
+        is_active: supplier.is_active,
       });
     } else {
       setEditingSupplier(null);
       setFormData({
-        name: '',
-        contact_person: '',
-        email: '',
-        phone: '',
-        address: '',
-        is_active: true
+        name: "",
+        contact_person: "",
+        email: "",
+        phone: "",
+        address: "",
+        is_active: true,
       });
     }
     setIsModalOpen(true);
@@ -97,13 +106,18 @@ const Suppliers = () => {
     setEditingSupplier(null);
   };
 
-  const filteredSuppliers = suppliers.filter((supplier) =>
-    supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (supplier.contact_person && supplier.contact_person.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (supplier.email && supplier.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredSuppliers = suppliers.filter(
+    (supplier) =>
+      supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (supplier.contact_person &&
+        supplier.contact_person
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (supplier.email &&
+        supplier.email.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
-  const canEdit = hasAnyRole(['System Administrator', 'Pharmacist']);
+  const canEdit = hasAnyRole(["Admin", "Pharmacist"]);
 
   if (loading) return <Loading />;
 
@@ -112,7 +126,10 @@ const Suppliers = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Suppliers</h1>
         {canEdit && (
-          <button className="btn btn-primary flex items-center gap-2" onClick={() => openModal()}>
+          <button
+            className="btn btn-primary flex items-center gap-2"
+            onClick={() => openModal()}
+          >
             <Plus size={18} />
             Add Supplier
           </button>
@@ -120,7 +137,10 @@ const Suppliers = () => {
       </div>
 
       <div className="mb-6 relative">
-        <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <Search
+          size={20}
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+        />
         <input
           type="text"
           placeholder="Search suppliers..."
@@ -138,11 +158,18 @@ const Suppliers = () => {
           </div>
         ) : (
           filteredSuppliers.map((supplier) => (
-            <div key={supplier.id} className="card hover:shadow-lg transition-shadow">
+            <div
+              key={supplier.id}
+              className="card hover:shadow-lg transition-shadow"
+            >
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">{supplier.name}</h3>
-                <span className={`badge ${supplier.is_active ? 'badge-success' : 'badge-danger'}`}>
-                  {supplier.is_active ? 'Active' : 'Inactive'}
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {supplier.name}
+                </h3>
+                <span
+                  className={`badge ${supplier.is_active ? "badge-success" : "badge-danger"}`}
+                >
+                  {supplier.is_active ? "Active" : "Inactive"}
                 </span>
               </div>
 
@@ -178,15 +205,15 @@ const Suppliers = () => {
 
               {canEdit && (
                 <div className="flex gap-2 pt-4 border-t border-gray-100">
-                  <button 
-                    className="flex-1 btn btn-secondary text-sm py-2" 
+                  <button
+                    className="flex-1 btn btn-secondary text-sm py-2"
                     onClick={() => openModal(supplier)}
                   >
                     <Edit size={14} className="mr-1" />
                     Edit
                   </button>
-                  <button 
-                    className="flex-1 btn btn-danger text-sm py-2" 
+                  <button
+                    className="flex-1 btn btn-danger text-sm py-2"
                     onClick={() => handleDelete(supplier.id)}
                   >
                     <Trash2 size={14} className="mr-1" />
@@ -199,7 +226,11 @@ const Suppliers = () => {
         )}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={closeModal} title={editingSupplier ? 'Edit Supplier' : 'Add Supplier'}>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={editingSupplier ? "Edit Supplier" : "Add Supplier"}
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="form-label">Company Name *</label>
@@ -207,7 +238,9 @@ const Suppliers = () => {
               type="text"
               className="form-input"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               required
               placeholder="Ethiopian Pharmaceuticals"
             />
@@ -219,7 +252,9 @@ const Suppliers = () => {
               type="text"
               className="form-input"
               value={formData.contact_person}
-              onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, contact_person: e.target.value })
+              }
               placeholder="Abebe Kebede"
             />
           </div>
@@ -231,7 +266,9 @@ const Suppliers = () => {
                 type="tel"
                 className="form-input"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
                 required
                 placeholder="+251116123456"
               />
@@ -243,7 +280,9 @@ const Suppliers = () => {
                 type="email"
                 className="form-input"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 placeholder="contact@supplier.com"
               />
             </div>
@@ -255,7 +294,9 @@ const Suppliers = () => {
               className="form-input"
               rows="3"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
               placeholder="Street address, City, Region"
             />
           </div>
@@ -265,19 +306,27 @@ const Suppliers = () => {
               <input
                 type="checkbox"
                 checked={formData.is_active}
-                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                onChange={(e) =>
+                  setFormData({ ...formData, is_active: e.target.checked })
+                }
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="text-sm font-medium text-gray-700">Active Supplier</span>
+              <span className="text-sm font-medium text-gray-700">
+                Active Supplier
+              </span>
             </label>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <button type="button" className="btn btn-secondary" onClick={closeModal}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={closeModal}
+            >
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              {editingSupplier ? 'Update' : 'Create'}
+              {editingSupplier ? "Update" : "Create"}
             </button>
           </div>
         </form>

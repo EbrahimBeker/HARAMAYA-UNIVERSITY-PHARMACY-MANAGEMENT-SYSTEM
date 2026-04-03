@@ -1,0 +1,19 @@
+// vite.config.js
+import { defineConfig } from "file:///D:/Web%20App/HARAMAYA-UNIVERSITY-PHARMACY-MANAGEMENT-SYSTEM/frontend/node_modules/vite/dist/node/index.js";
+import react from "file:///D:/Web%20App/HARAMAYA-UNIVERSITY-PHARMACY-MANAGEMENT-SYSTEM/frontend/node_modules/@vitejs/plugin-react/dist/index.js";
+var vite_config_default = defineConfig({
+  plugins: [react()],
+  server: {
+    port: 3e3,
+    proxy: {
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true
+      }
+    }
+  }
+});
+export {
+  vite_config_default as default
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsidml0ZS5jb25maWcuanMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbImNvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9kaXJuYW1lID0gXCJEOlxcXFxXZWIgQXBwXFxcXEhBUkFNQVlBLVVOSVZFUlNJVFktUEhBUk1BQ1ktTUFOQUdFTUVOVC1TWVNURU1cXFxcZnJvbnRlbmRcIjtjb25zdCBfX3ZpdGVfaW5qZWN0ZWRfb3JpZ2luYWxfZmlsZW5hbWUgPSBcIkQ6XFxcXFdlYiBBcHBcXFxcSEFSQU1BWUEtVU5JVkVSU0lUWS1QSEFSTUFDWS1NQU5BR0VNRU5ULVNZU1RFTVxcXFxmcm9udGVuZFxcXFx2aXRlLmNvbmZpZy5qc1wiO2NvbnN0IF9fdml0ZV9pbmplY3RlZF9vcmlnaW5hbF9pbXBvcnRfbWV0YV91cmwgPSBcImZpbGU6Ly8vRDovV2ViJTIwQXBwL0hBUkFNQVlBLVVOSVZFUlNJVFktUEhBUk1BQ1ktTUFOQUdFTUVOVC1TWVNURU0vZnJvbnRlbmQvdml0ZS5jb25maWcuanNcIjtpbXBvcnQgeyBkZWZpbmVDb25maWcgfSBmcm9tICd2aXRlJ1xyXG5pbXBvcnQgcmVhY3QgZnJvbSAnQHZpdGVqcy9wbHVnaW4tcmVhY3QnXHJcblxyXG5leHBvcnQgZGVmYXVsdCBkZWZpbmVDb25maWcoe1xyXG4gIHBsdWdpbnM6IFtyZWFjdCgpXSxcclxuICBzZXJ2ZXI6IHtcclxuICAgIHBvcnQ6IDMwMDAsXHJcbiAgICBwcm94eToge1xyXG4gICAgICAnL2FwaSc6IHtcclxuICAgICAgICB0YXJnZXQ6ICdodHRwOi8vbG9jYWxob3N0OjUwMDAnLFxyXG4gICAgICAgIGNoYW5nZU9yaWdpbjogdHJ1ZVxyXG4gICAgICB9XHJcbiAgICB9XHJcbiAgfVxyXG59KVxyXG4iXSwKICAibWFwcGluZ3MiOiAiO0FBQWtZLFNBQVMsb0JBQW9CO0FBQy9aLE9BQU8sV0FBVztBQUVsQixJQUFPLHNCQUFRLGFBQWE7QUFBQSxFQUMxQixTQUFTLENBQUMsTUFBTSxDQUFDO0FBQUEsRUFDakIsUUFBUTtBQUFBLElBQ04sTUFBTTtBQUFBLElBQ04sT0FBTztBQUFBLE1BQ0wsUUFBUTtBQUFBLFFBQ04sUUFBUTtBQUFBLFFBQ1IsY0FBYztBQUFBLE1BQ2hCO0FBQUEsSUFDRjtBQUFBLEVBQ0Y7QUFDRixDQUFDOyIsCiAgIm5hbWVzIjogW10KfQo=

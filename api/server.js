@@ -1,10 +1,10 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const errorHandler = require('./middleware/errorHandler');
-const initDatabase = require('./config/initDatabase');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const errorHandler = require("./middleware/errorHandler");
+const initDatabase = require("./config/initDatabase");
 
 const app = express();
 
@@ -13,25 +13,33 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/medicines', require('./routes/medicines'));
-app.use('/api/medicine-categories', require('./routes/categories'));
-app.use('/api/medicine-types', require('./routes/types'));
-app.use('/api/suppliers', require('./routes/suppliers'));
-app.use('/api/roles', require('./routes/roles'));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/users", require("./routes/users"));
+app.use("/api/medicines", require("./routes/medicines"));
+app.use("/api/medicine-categories", require("./routes/categories"));
+app.use("/api/medicine-types", require("./routes/types"));
+app.use("/api/suppliers", require("./routes/suppliers"));
+app.use("/api/roles", require("./routes/roles"));
+
+// New RBAC Routes
+app.use("/api/patients", require("./routes/patients"));
+app.use("/api/prescriptions", require("./routes/prescriptions"));
+app.use("/api/diagnoses", require("./routes/diagnoses"));
+app.use("/api/inventory", require("./routes/inventory"));
+app.use("/api/reports", require("./routes/reports"));
+app.use("/api/backup", require("./routes/backup"));
 
 // Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Haramaya Pharmacy API is running' });
+app.get("/health", (req, res) => {
+  res.json({ status: "OK", message: "Haramaya Pharmacy API is running" });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ message: "Route not found" });
 });
 
 // Error handler
@@ -44,7 +52,7 @@ const startServer = async () => {
   try {
     // Initialize database
     await initDatabase();
-    
+
     // Start server
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
@@ -52,7 +60,7 @@ const startServer = async () => {
       console.log(`💚 Health: http://localhost:${PORT}/health\n`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error.message);
+    console.error("Failed to start server:", error.message);
     process.exit(1);
   }
 };
