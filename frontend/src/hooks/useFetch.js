@@ -6,7 +6,7 @@ export const useFetch = (apiFunc, dependencies = []) => {
   const [error, setError] = useState(null);
 
   const refetch = async () => {
-    try {
+    try {   
       setLoading(true);
       setError(null);
       const response = await apiFunc();
