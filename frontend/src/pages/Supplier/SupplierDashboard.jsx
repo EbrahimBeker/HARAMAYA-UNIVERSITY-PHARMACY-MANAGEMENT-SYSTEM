@@ -27,229 +27,278 @@ const SupplierDashboard = () => {
 
   const supplierModules = [
     {
-      title: "Purchase Orders",
-      description: "View and manage purchase orders",
-      icon: "📋",
-      link: "/supplier/orders",
+      title: "Supplier Management",
+      description: "View and manage supplier information",
+      icon: "🏢",
+      link: "/suppliers",
       color: "bg-blue-500",
     },
     {
-      title: "Confirm Availability",
-      description: "Confirm medicine availability",
-      icon: "✅",
-      link: "/supplier/availability",
+      title: "Medicine Catalog",
+      description: "Browse available medicines",
+      icon: "💊",
+      link: "/medicines",
       color: "bg-green-500",
     },
     {
-      title: "Update Order Status",
-      description: "Update delivery and order status",
-      icon: "🚚",
-      link: "/supplier/status",
-      color: "bg-purple-500",
-    },
-    {
-      title: "Supplier Reports",
+      title: "Supply Reports",
       description: "View supplier performance reports",
       icon: "📊",
-      link: "/supplier/reports",
+      link: "/reports",
       color: "bg-orange-500",
+    },
+    {
+      title: "System Dashboard",
+      description: "Access main system dashboard",
+      icon: "📋",
+      link: "/dashboard",
+      color: "bg-purple-500",
     },
   ];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <div
+              className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-purple-600 rounded-full animate-spin mx-auto"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "1.5s",
+              }}
+            ></div>
+          </div>
+          <p className="text-gray-600 font-medium">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+    <div className="p-6 space-y-8 animate-fade-in">
+      {/* Header Section */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold gradient-text mb-3">
           Supplier Dashboard
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 text-lg">
           Purchase order management and delivery tracking
         </p>
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="dashboard-card hover-lift">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <span className="text-2xl">📋</span>
+            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+              <span className="text-3xl text-white">📋</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Orders</p>
-              <p className="text-2xl font-semibold text-gray-900">0</p>
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                Total Orders
+              </p>
+              <p className="text-3xl font-bold text-gray-900">0</p>
+              <p className="text-xs text-blue-600 font-medium">All time</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="dashboard-card hover-lift">
           <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <span className="text-2xl">⏳</span>
+            <div className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl shadow-lg">
+              <span className="text-3xl text-white">⏳</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                 Pending Orders
               </p>
-              <p className="text-2xl font-semibold text-gray-900">0</p>
+              <p className="text-3xl font-bold text-gray-900">0</p>
+              <p className="text-xs text-yellow-600 font-medium">
+                Awaiting confirmation
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="dashboard-card hover-lift">
           <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <span className="text-2xl">✅</span>
+            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl shadow-lg">
+              <span className="text-3xl text-white">✅</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                 Delivered Orders
               </p>
-              <p className="text-2xl font-semibold text-gray-900">0</p>
+              <p className="text-3xl font-bold text-gray-900">0</p>
+              <p className="text-xs text-green-600 font-medium">Completed</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="dashboard-card hover-lift">
           <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <span className="text-2xl">💰</span>
+            <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl shadow-lg">
+              <span className="text-3xl text-white">💰</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                 Monthly Revenue
               </p>
-              <p className="text-2xl font-semibold text-gray-900">$0</p>
+              <p className="text-3xl font-bold text-gray-900">$0</p>
+              <p className="text-xs text-purple-600 font-medium">This month</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {supplierModules.map((module, index) => (
-          <Link
-            key={index}
-            to={module.link}
-            className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 block"
-          >
-            <div
-              className={`w-12 h-12 ${module.color} rounded-lg flex items-center justify-center mb-4`}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <span className="w-1 h-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
+          Supplier Tools
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {supplierModules.map((module, index) => (
+            <Link
+              key={index}
+              to={module.link}
+              className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200 transform hover:scale-105 overflow-hidden"
             >
-              <span className="text-2xl text-white">{module.icon}</span>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {module.title}
-            </h3>
-            <p className="text-gray-600 text-sm">{module.description}</p>
-          </Link>
-        ))}
+              {/* Background Gradient */}
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${module.color.replace("bg-", "from-")} to-transparent opacity-5 group-hover:opacity-10 transition-opacity`}
+              ></div>
+
+              <div className="relative z-10">
+                <div
+                  className={`w-14 h-14 ${module.color} rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
+                >
+                  <span className="text-2xl text-white">{module.icon}</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                  {module.title}
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {module.description}
+                </p>
+
+                {/* Arrow indicator */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">→</span>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Recent Purchase Orders */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Recent Purchase Orders
-          </h2>
-          <Link
-            to="/supplier/orders"
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-          >
-            View All
-          </Link>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <span className="w-1 h-6 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
+              Recent Purchase Orders
+            </h2>
+            <Link
+              to="/suppliers"
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold text-sm bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-all duration-200"
+            >
+              View All
+              <span>→</span>
+            </Link>
+          </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="table-modern">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Order #
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Order Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Expected Delivery
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th>Order #</th>
+                <th>Order Date</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+                <th>Expected Delivery</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {purchaseOrders.length > 0 ? (
                 purchaseOrders.map((order) => (
-                  <tr key={order.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {order.order_number}
+                  <tr
+                    key={order.id}
+                    className="hover:bg-blue-50 transition-colors"
+                  >
+                    <td>
+                      <span className="font-mono font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+                        {order.order_number}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="text-gray-500">
                       {new Date(order.order_date).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="font-semibold text-gray-900">
                       ${order.total_amount || 0}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td>
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${
                           order.status === "Pending"
-                            ? "bg-yellow-100 text-yellow-800"
+                            ? "bg-yellow-50 text-yellow-700 border-yellow-200"
                             : order.status === "Confirmed"
-                              ? "bg-blue-100 text-blue-800"
+                              ? "bg-blue-50 text-blue-700 border-blue-200"
                               : order.status === "Delivered"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
+                                ? "bg-green-50 text-green-700 border-green-200"
+                                : "bg-red-50 text-red-700 border-red-200"
                         }`}
                       >
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="text-gray-500">
                       {order.expected_delivery_date
                         ? new Date(
                             order.expected_delivery_date,
                           ).toLocaleDateString()
                         : "Not set"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <Link
-                        to={`/supplier/orders/${order.id}`}
-                        className="text-blue-600 hover:text-blue-900 mr-3"
-                      >
-                        View
-                      </Link>
-                      {order.status === "Pending" && (
+                    <td>
+                      <div className="flex items-center gap-2">
                         <Link
-                          to={`/supplier/orders/${order.id}/confirm`}
-                          className="text-green-600 hover:text-green-900"
+                          to="/suppliers"
+                          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-sm bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg transition-all duration-200"
                         >
-                          Confirm
+                          View
                         </Link>
-                      )}
+                        {order.status === "Pending" && (
+                          <Link
+                            to="/suppliers"
+                            className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 font-medium text-sm bg-green-50 hover:bg-green-100 px-3 py-1 rounded-lg transition-all duration-200"
+                          >
+                            Confirm
+                          </Link>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="6"
-                    className="px-6 py-4 text-center text-sm text-gray-500"
-                  >
-                    No purchase orders available
+                  <td colSpan="6" className="text-center py-12">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                        <span className="text-2xl text-gray-400">📋</span>
+                      </div>
+                      <p className="text-gray-500 font-medium">
+                        No purchase orders available
+                      </p>
+                      <Link to="/suppliers" className="btn btn-primary text-sm">
+                        Browse Suppliers
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               )}

@@ -30,9 +30,9 @@ After running the setup migration (`node setup-rbac.js`), the following default 
 
 ## 🩺 **PHYSICIAN**
 
-- **Username:** `doctor`
-- **Password:** `doctor123`
-- **Email:** `doctor@pharmacy.com`
+- **Username:** `physician`
+- **Password:** `physician123`
+- **Email:** `physician@pharmacy.com`
 - **Role:** Physician
 - **Access:** Patient diagnosis, prescription creation, patient history
 

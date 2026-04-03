@@ -19,6 +19,12 @@ import PhysicianDashboard from "./pages/Physician/PhysicianDashboard";
 import PharmacistDashboard from "./pages/Pharmacist/PharmacistDashboard";
 import SupplierDashboard from "./pages/Supplier/SupplierDashboard";
 
+// Data Clerk specific pages
+import PatientRegistration from "./pages/DataClerk/PatientRegistration";
+import PatientRecords from "./pages/DataClerk/PatientRecords";
+import Billing from "./pages/DataClerk/Billing";
+import PatientReports from "./pages/DataClerk/PatientReports";
+
 // Dashboard Router Component
 const DashboardRouter = () => {
   const { user } = useAuth();
@@ -49,8 +55,27 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <BrowserRouter>
-          <ToastContainer position="top-right" autoClose={3000} />
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <ToastContainer
+            position="top-right"
+            autoClose={4000}
+            hideProgressBar={false}
+            newestOnTop={true}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            toastClassName="!bg-white !text-gray-900 !rounded-xl !shadow-2xl !border !border-gray-200"
+            bodyClassName="!text-sm !font-medium"
+            progressClassName="!bg-gradient-to-r !from-blue-600 !to-purple-600"
+          />
           <Routes>
             <Route path="/login" element={<Login />} />
 
@@ -95,6 +120,54 @@ function App() {
                 element={
                   <ProtectedRoute roles={["Data Clerk"]}>
                     <DataClerkDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="clerk/patients/new"
+                element={
+                  <ProtectedRoute roles={["Data Clerk"]}>
+                    <PatientRegistration />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="clerk/patients"
+                element={
+                  <ProtectedRoute roles={["Data Clerk"]}>
+                    <PatientRecords />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="clerk/billing"
+                element={
+                  <ProtectedRoute roles={["Data Clerk"]}>
+                    <Billing />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="clerk/reports"
+                element={
+                  <ProtectedRoute roles={["Data Clerk"]}>
+                    <PatientReports />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="clerk/patients/:id"
+                element={
+                  <ProtectedRoute roles={["Data Clerk"]}>
+                    <PatientRecords />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="clerk/patients/:id/edit"
+                element={
+                  <ProtectedRoute roles={["Data Clerk"]}>
+                    <PatientRegistration />
                   </ProtectedRoute>
                 }
               />
@@ -146,8 +219,24 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="medicines" element={<Medicines />} />
-              <Route path="suppliers" element={<Suppliers />} />
+              <Route
+                path="medicines"
+                element={
+                  <ProtectedRoute
+                    roles={["Admin", "Pharmacist", "Data Clerk", "Physician"]}
+                  >
+                    <Medicines />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="suppliers"
+                element={
+                  <ProtectedRoute roles={["Admin", "Pharmacist"]}>
+                    <Suppliers />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="users"
                 element={
@@ -156,7 +245,21 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="reports" element={<Reports />} />
+              <Route
+                path="reports"
+                element={
+                  <ProtectedRoute
+                    roles={[
+                      "Admin",
+                      "Pharmacist",
+                      "Data Clerk",
+                      "Drug Supplier",
+                    ]}
+                  >
+                    <Reports />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

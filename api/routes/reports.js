@@ -6,7 +6,7 @@ const { authenticate, checkPermission } = require("../middleware/auth");
 router.use(authenticate);
 
 // Dashboard statistics
-router.get("/dashboard", authenticate, reportController.getDashboardStats);
+router.get("/dashboard", reportController.getDashboardStats);
 
 // Patient reports (Data Clerk, Admin)
 router.get(

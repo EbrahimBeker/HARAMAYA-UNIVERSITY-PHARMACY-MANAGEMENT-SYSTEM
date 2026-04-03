@@ -15,13 +15,10 @@ exports.getAll = async (req, res, next) => {
     const offset = (page - 1) * limit;
 
     let sql = `SELECT p.*, 
-                      CONCAT(pat.first_name, ' ', pat.last_name) as patient_name,
-                      CONCAT(u.first_name, ' ', u.last_name) as physician_name,
-                      CONCAT(d.first_name, ' ', d.last_name) as dispensed_by_name
+                      p.patient_name,
+                      CONCAT(u.first_name, ' ', u.last_name) as physician_name
                FROM prescriptions p
-               LEFT JOIN patients pat ON p.patient_id = pat.id
                LEFT JOIN users u ON p.physician_id = u.id
-               LEFT JOIN users d ON p.dispensed_by = d.id
                WHERE 1=1`;
     const params = [];
 
@@ -59,21 +56,28 @@ exports.create = async (req, res, next) => {
   try {
     await connection.beginTransaction();
 
-    const { patient_id, diagnosis_id, prescription_date, notes, items } =
-      req.body;
+    const {
+      patient_name,
+      patient_id_number,
+      diagnosis,
+      prescription_date,
+      notes,
+      items,
+    } = req.body;
     const prescription_number = await generatePrescriptionNumber();
 
     // Create prescription header
     const [result] = await connection.execute(
       `INSERT INTO prescriptions (
-        prescription_number, patient_id, diagnosis_id, physician_id,
-        prescription_date, notes, status
-      ) VALUES (?, ?, ?, ?, ?, ?, 'Pending')`,
+        prescription_number, patient_name, patient_id_number, physician_id,
+        diagnosis, prescription_date, notes, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
       [
         prescription_number,
-        patient_id,
-        diagnosis_id,
+        patient_name,
+        patient_id_number,
         req.user.id,
+        diagnosis,
         prescription_date,
         notes,
       ],
@@ -85,7 +89,7 @@ exports.create = async (req, res, next) => {
     for (const item of items) {
       await connection.execute(
         `INSERT INTO prescription_items (
-          prescription_id, medicine_id, quantity, dosage, frequency, duration, instructions
+          prescription_id, medicine_id, quantity_prescribed, dosage, frequency, duration, instructions
         ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           prescriptionId,
@@ -104,10 +108,9 @@ exports.create = async (req, res, next) => {
     // Get the created prescription with details
     const [prescription] = await db.execute(
       `SELECT p.*, 
-              CONCAT(pat.first_name, ' ', pat.last_name) as patient_name,
+              p.patient_name,
               CONCAT(u.first_name, ' ', u.last_name) as physician_name
        FROM prescriptions p
-       LEFT JOIN patients pat ON p.patient_id = pat.id
        LEFT JOIN users u ON p.physician_id = u.id
        WHERE p.id = ?`,
       [prescriptionId],
@@ -129,13 +132,10 @@ exports.getOne = async (req, res, next) => {
   try {
     const [prescriptions] = await db.execute(
       `SELECT p.*, 
-              CONCAT(pat.first_name, ' ', pat.last_name) as patient_name,
-              CONCAT(u.first_name, ' ', u.last_name) as physician_name,
-              CONCAT(d.first_name, ' ', d.last_name) as dispensed_by_name
+              p.patient_name,
+              CONCAT(u.first_name, ' ', u.last_name) as physician_name
        FROM prescriptions p
-       LEFT JOIN patients pat ON p.patient_id = pat.id
        LEFT JOIN users u ON p.physician_id = u.id
-       LEFT JOIN users d ON p.dispensed_by = d.id
        WHERE p.id = ?`,
       [req.params.id],
     );
@@ -172,7 +172,7 @@ exports.dispense = async (req, res, next) => {
 
     // Check if prescription exists and is pending
     const [prescriptions] = await connection.execute(
-      'SELECT * FROM prescriptions WHERE id = ? AND status = "Pending"',
+      'SELECT * FROM prescriptions WHERE id = ? AND status = "pending"',
       [id],
     );
 
@@ -215,12 +215,18 @@ exports.dispense = async (req, res, next) => {
           [dispensedItem.quantity_dispensed, item.medicine_id],
         );
 
+        // Update prescription item with dispensed quantity
+        await connection.execute(
+          "UPDATE prescription_items SET quantity_dispensed = ? WHERE id = ?",
+          [dispensedItem.quantity_dispensed, item.id],
+        );
+
         // Record stock out
         await connection.execute(
           `INSERT INTO stock_out (
             medicine_id, batch_number, quantity, reason, reference_id,
             processed_by, processed_date
-          ) VALUES (?, 'DISPENSED', ?, 'Dispensed', ?, ?, CURDATE())`,
+          ) VALUES (?, 'DISPENSED', ?, 'sale', ?, ?, CURDATE())`,
           [item.medicine_id, dispensedItem.quantity_dispensed, id, req.user.id],
         );
       }
@@ -228,8 +234,8 @@ exports.dispense = async (req, res, next) => {
 
     // Update prescription status
     await connection.execute(
-      'UPDATE prescriptions SET status = "Dispensed", dispensed_by = ?, dispensed_at = NOW() WHERE id = ?',
-      [req.user.id, id],
+      'UPDATE prescriptions SET status = "completed" WHERE id = ?',
+      [id],
     );
 
     await connection.commit();
@@ -247,14 +253,13 @@ exports.getPendingPrescriptions = async (req, res, next) => {
   try {
     const [prescriptions] = await db.execute(
       `SELECT p.*, 
-              CONCAT(pat.first_name, ' ', pat.last_name) as patient_name,
+              p.patient_name,
               CONCAT(u.first_name, ' ', u.last_name) as physician_name,
               COUNT(pi.id) as item_count
        FROM prescriptions p
-       LEFT JOIN patients pat ON p.patient_id = pat.id
        LEFT JOIN users u ON p.physician_id = u.id
        LEFT JOIN prescription_items pi ON p.id = pi.prescription_id
-       WHERE p.status = 'Pending'
+       WHERE p.status = 'pending'
        GROUP BY p.id
        ORDER BY p.prescription_date DESC`,
     );

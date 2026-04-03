@@ -34,188 +34,220 @@ const AdminDashboard = () => {
       title: "System Reports",
       description: "View all system reports and analytics",
       icon: "📊",
-      link: "/admin/reports",
+      link: "/reports",
       color: "bg-green-500",
-    },
-    {
-      title: "Backup & Restore",
-      description: "Manage system backups and data recovery",
-      icon: "💾",
-      link: "/admin/backup",
-      color: "bg-purple-500",
     },
     {
       title: "Medicine Management",
       description: "Manage medicines, categories, and types",
       icon: "💊",
-      link: "/admin/medicines",
+      link: "/medicines",
       color: "bg-red-500",
     },
     {
       title: "Supplier Management",
       description: "Manage drug suppliers and purchase orders",
       icon: "🏢",
-      link: "/admin/suppliers",
+      link: "/suppliers",
       color: "bg-yellow-500",
-    },
-    {
-      title: "Audit Logs",
-      description: "View system activity and audit trails",
-      icon: "🔍",
-      link: "/admin/audit",
-      color: "bg-indigo-500",
     },
   ];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <div
+              className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-purple-600 rounded-full animate-spin mx-auto"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "1.5s",
+              }}
+            ></div>
+          </div>
+          <p className="text-gray-600 font-medium">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+    <div className="p-6 space-y-8 animate-fade-in">
+      {/* Header Section */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold gradient-text mb-3">
           Admin Dashboard
         </h1>
-        <p className="text-gray-600">System administration and management</p>
+        <p className="text-gray-600 text-lg">
+          System administration and management
+        </p>
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="dashboard-card hover-lift">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <span className="text-2xl">👥</span>
+            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+              <span className="text-3xl text-white">👥</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                 Total Patients
               </p>
-              <p className="text-2xl font-semibold text-gray-900">
+              <p className="text-3xl font-bold text-gray-900">
                 {stats.total_patients || 0}
               </p>
+              <p className="text-xs text-blue-600 font-medium">System wide</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="dashboard-card hover-lift">
           <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <span className="text-2xl">💊</span>
+            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl shadow-lg">
+              <span className="text-3xl text-white">💊</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                 Total Medicines
               </p>
-              <p className="text-2xl font-semibold text-gray-900">
+              <p className="text-3xl font-bold text-gray-900">
                 {stats.total_medicines || 0}
               </p>
+              <p className="text-xs text-green-600 font-medium">In inventory</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="dashboard-card hover-lift">
           <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <span className="text-2xl">📋</span>
+            <div className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl shadow-lg">
+              <span className="text-3xl text-white">📋</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                 Pending Prescriptions
               </p>
-              <p className="text-2xl font-semibold text-gray-900">
+              <p className="text-3xl font-bold text-gray-900">
                 {stats.pending_prescriptions || 0}
+              </p>
+              <p className="text-xs text-yellow-600 font-medium">
+                Awaiting dispatch
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="dashboard-card hover-lift">
           <div className="flex items-center">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <span className="text-2xl">⚠️</span>
+            <div className="p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl shadow-lg">
+              <span className="text-3xl text-white">⚠️</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                 Low Stock Items
               </p>
-              <p className="text-2xl font-semibold text-gray-900">
+              <p className="text-3xl font-bold text-gray-900">
                 {stats.low_stock_medicines || 0}
               </p>
+              <p className="text-xs text-red-600 font-medium">Need attention</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Admin Modules */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {adminModules.map((module, index) => (
-          <Link
-            key={index}
-            to={module.link}
-            className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 block"
-          >
-            <div
-              className={`w-12 h-12 ${module.color} rounded-lg flex items-center justify-center mb-4`}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <span className="w-1 h-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
+          Administration Tools
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {adminModules.map((module, index) => (
+            <Link
+              key={index}
+              to={module.link}
+              className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200 transform hover:scale-105 overflow-hidden"
             >
-              <span className="text-2xl">{module.icon}</span>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {module.title}
-            </h3>
-            <p className="text-gray-600 text-sm">{module.description}</p>
-          </Link>
-        ))}
+              {/* Background Gradient */}
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${module.color.replace("bg-", "from-")} to-transparent opacity-5 group-hover:opacity-10 transition-opacity`}
+              ></div>
+
+              <div className="relative z-10">
+                <div
+                  className={`w-14 h-14 ${module.color} rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
+                >
+                  <span className="text-2xl text-white">{module.icon}</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                  {module.title}
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {module.description}
+                </p>
+
+                {/* Arrow indicator */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">→</span>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="mt-8 bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+      {/* System Overview */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50">
+          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <span className="w-1 h-6 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
             System Overview
           </h2>
         </div>
         <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">
                 Today's Activity
               </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-xl">
+                  <span className="text-sm text-gray-700 font-medium">
                     New Prescriptions
                   </span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-lg">
                     {stats.todays_prescriptions || 0}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Monthly Revenue</span>
-                  <span className="text-sm font-medium">
+                <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl">
+                  <span className="text-sm text-gray-700 font-medium">
+                    Monthly Revenue
+                  </span>
+                  <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">
                     ${stats.monthly_revenue || 0}
                   </span>
                 </div>
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">
                 System Status
               </h3>
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span className="text-sm text-gray-600">
+              <div className="space-y-3">
+                <div className="flex items-center p-3 bg-green-50 rounded-xl">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                  <span className="text-sm text-gray-700 font-medium">
                     Database: Online
                   </span>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span className="text-sm text-gray-600">
+                <div className="flex items-center p-3 bg-green-50 rounded-xl">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                  <span className="text-sm text-gray-700 font-medium">
                     API: Operational
                   </span>
                 </div>

@@ -23,9 +23,9 @@ const defaultUsers = [
     role: "Data Clerk",
   },
   {
-    username: "doctor",
-    email: "doctor@pharmacy.com",
-    password: "doctor123",
+    username: "physician",
+    email: "physician@pharmacy.com",
+    password: "physician123",
     first_name: "Dr. John",
     last_name: "Smith",
     role: "Physician",

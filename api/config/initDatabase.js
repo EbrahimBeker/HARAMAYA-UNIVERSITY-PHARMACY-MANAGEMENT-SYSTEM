@@ -1,10 +1,10 @@
-const mysql = require('mysql2/promise');
-const bcrypt = require('bcryptjs');
-require('dotenv').config();
+const mysql = require("mysql2/promise");
+const bcrypt = require("bcryptjs");
+require("dotenv").config();
 
 const initDatabase = async () => {
   let connection;
-  
+
   try {
     // Connect without database first
     connection = await mysql.createConnection({
@@ -12,27 +12,28 @@ const initDatabase = async () => {
       port: process.env.DB_PORT,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
-      multipleStatements: true
+      multipleStatements: true,
     });
 
-    console.log('📦 Initializing database...');
+    console.log("📦 Initializing database...");
 
     // Create database if not exists
-    await connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+    await connection.query(
+      `CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+    );
     await connection.query(`USE ${process.env.DB_NAME}`);
-    
-    console.log('✓ Database created/verified');
+
+    console.log("✓ Database created/verified");
 
     // Create tables
     await createTables(connection);
-    
+
     // Insert default data
     await insertDefaultData(connection);
-    
-    console.log('✓ Database initialization completed\n');
-    
+
+    console.log("✓ Database initialization completed\n");
   } catch (error) {
-    console.error('✗ Database initialization failed:', error.message);
+    console.error("✗ Database initialization failed:", error.message);
     throw error;
   } finally {
     if (connection) {
@@ -226,34 +227,203 @@ const createTables = async (connection) => {
     ) ENGINE=InnoDB
   `);
 
-  console.log('✓ All tables created/verified');
-  
+  // Patients Table
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS patients (
+      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      patient_id VARCHAR(20) UNIQUE NOT NULL,
+      first_name VARCHAR(50) NOT NULL,
+      last_name VARCHAR(50) NOT NULL,
+      date_of_birth DATE NOT NULL,
+      gender ENUM('Male', 'Female', 'Other') NOT NULL,
+      phone VARCHAR(20) NOT NULL,
+      email VARCHAR(100),
+      address TEXT,
+      emergency_contact_name VARCHAR(100),
+      emergency_contact_phone VARCHAR(20),
+      blood_group VARCHAR(5),
+      allergies TEXT,
+      registered_by BIGINT UNSIGNED NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      deleted_at TIMESTAMP NULL,
+      FOREIGN KEY (registered_by) REFERENCES users(id),
+      INDEX idx_patient_id (patient_id),
+      INDEX idx_name (last_name, first_name),
+      INDEX idx_phone (phone)
+    ) ENGINE=InnoDB
+  `);
+
+  // Diagnoses Table
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS diagnoses (
+      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      patient_id BIGINT UNSIGNED NOT NULL,
+      physician_id BIGINT UNSIGNED NOT NULL,
+      diagnosis_date DATE NOT NULL,
+      symptoms TEXT NOT NULL,
+      vital_signs JSON,
+      diagnosis TEXT NOT NULL,
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
+      FOREIGN KEY (physician_id) REFERENCES users(id),
+      INDEX idx_patient (patient_id),
+      INDEX idx_physician (physician_id),
+      INDEX idx_date (diagnosis_date)
+    ) ENGINE=InnoDB
+  `);
+
+  // Prescriptions Table
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS prescriptions (
+      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      prescription_number VARCHAR(20) UNIQUE NOT NULL,
+      patient_id BIGINT UNSIGNED NOT NULL,
+      diagnosis_id BIGINT UNSIGNED,
+      physician_id BIGINT UNSIGNED NOT NULL,
+      prescription_date DATE NOT NULL,
+      status ENUM('Pending', 'Dispensed', 'Cancelled') DEFAULT 'Pending',
+      notes TEXT,
+      dispensed_by BIGINT UNSIGNED,
+      dispensed_at TIMESTAMP NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
+      FOREIGN KEY (diagnosis_id) REFERENCES diagnoses(id) ON DELETE SET NULL,
+      FOREIGN KEY (physician_id) REFERENCES users(id),
+      FOREIGN KEY (dispensed_by) REFERENCES users(id),
+      INDEX idx_prescription_number (prescription_number),
+      INDEX idx_patient (patient_id),
+      INDEX idx_physician (physician_id),
+      INDEX idx_status (status),
+      INDEX idx_date (prescription_date)
+    ) ENGINE=InnoDB
+  `);
+
+  // Prescription Items Table
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS prescription_items (
+      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      prescription_id BIGINT UNSIGNED NOT NULL,
+      medicine_id BIGINT UNSIGNED NOT NULL,
+      quantity INT NOT NULL,
+      dosage VARCHAR(100) NOT NULL,
+      frequency VARCHAR(100) NOT NULL,
+      duration VARCHAR(50) NOT NULL,
+      instructions TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE CASCADE,
+      FOREIGN KEY (medicine_id) REFERENCES medicines(id),
+      INDEX idx_prescription (prescription_id),
+      INDEX idx_medicine (medicine_id)
+    ) ENGINE=InnoDB
+  `);
+
+  // Purchase Orders Table
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS purchase_orders (
+      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      order_number VARCHAR(20) UNIQUE NOT NULL,
+      supplier_id BIGINT UNSIGNED NOT NULL,
+      order_date DATE NOT NULL,
+      status ENUM('Pending', 'Confirmed', 'Delivered', 'Cancelled') DEFAULT 'Pending',
+      total_amount DECIMAL(12,2),
+      expected_delivery_date DATE,
+      actual_delivery_date DATE,
+      created_by BIGINT UNSIGNED NOT NULL,
+      approved_by BIGINT UNSIGNED,
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
+      FOREIGN KEY (created_by) REFERENCES users(id),
+      FOREIGN KEY (approved_by) REFERENCES users(id),
+      INDEX idx_order_number (order_number),
+      INDEX idx_supplier (supplier_id),
+      INDEX idx_status (status),
+      INDEX idx_order_date (order_date)
+    ) ENGINE=InnoDB
+  `);
+
+  // Invoices Table
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS invoices (
+      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      invoice_number VARCHAR(20) UNIQUE NOT NULL,
+      patient_id BIGINT UNSIGNED NOT NULL,
+      prescription_id BIGINT UNSIGNED,
+      invoice_date DATE NOT NULL,
+      subtotal DECIMAL(10,2) NOT NULL,
+      discount DECIMAL(10,2) DEFAULT 0,
+      tax DECIMAL(10,2) DEFAULT 0,
+      total_amount DECIMAL(10,2) NOT NULL,
+      status ENUM('Pending', 'Paid', 'Cancelled') DEFAULT 'Pending',
+      generated_by BIGINT UNSIGNED NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (patient_id) REFERENCES patients(id),
+      FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE SET NULL,
+      FOREIGN KEY (generated_by) REFERENCES users(id),
+      INDEX idx_invoice_number (invoice_number),
+      INDEX idx_patient (patient_id),
+      INDEX idx_status (status),
+      INDEX idx_date (invoice_date)
+    ) ENGINE=InnoDB
+  `);
+
+  // Audit Log Table
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS audit_log (
+      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      user_id BIGINT UNSIGNED,
+      action VARCHAR(50) NOT NULL,
+      table_name VARCHAR(50) NOT NULL,
+      record_id BIGINT UNSIGNED,
+      old_values JSON,
+      new_values JSON,
+      ip_address VARCHAR(45),
+      user_agent TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+      INDEX idx_user (user_id),
+      INDEX idx_action (action),
+      INDEX idx_table (table_name),
+      INDEX idx_created_at (created_at)
+    ) ENGINE=InnoDB
+  `);
+
+  console.log("✓ All tables created/verified");
+
   // Migrate: Remove description columns if they exist
   await migrateRemoveDescriptions(connection);
 };
 
 const migrateRemoveDescriptions = async (connection) => {
   try {
-    console.log('🔄 Checking for description columns to remove...');
-    
+    console.log("🔄 Checking for description columns to remove...");
+
     const tablesToMigrate = [
-      'roles',
-      'medicine_categories',
-      'medicine_types',
-      'medicines'
+      "roles",
+      "medicine_categories",
+      "medicine_types",
+      "medicines",
     ];
-    
+
     for (const table of tablesToMigrate) {
       try {
         // Check if description column exists
         const [columns] = await connection.query(
           `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
            WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = 'description'`,
-          [process.env.DB_NAME, table]
+          [process.env.DB_NAME, table],
         );
-        
+
         if (columns.length > 0) {
-          await connection.query(`ALTER TABLE ${table} DROP COLUMN description`);
+          await connection.query(
+            `ALTER TABLE ${table} DROP COLUMN description`,
+          );
           console.log(`  ✓ Removed description column from ${table}`);
         }
       } catch (error) {
@@ -261,58 +431,102 @@ const migrateRemoveDescriptions = async (connection) => {
         console.log(`  ℹ No description column in ${table}`);
       }
     }
-    
-    console.log('✓ Migration completed');
+
+    console.log("✓ Migration completed");
   } catch (error) {
-    console.log('⚠ Migration warning:', error.message);
+    console.log("⚠ Migration warning:", error.message);
   }
 };
 
 const insertDefaultData = async (connection) => {
   try {
     // Check if roles exist
-    const [roles] = await connection.query('SELECT COUNT(*) as count FROM roles');
-    
+    const [roles] = await connection.query(
+      "SELECT COUNT(*) as count FROM roles",
+    );
+
     if (roles[0].count === 0) {
-      // Insert default roles
+      // Insert default roles (updated for RBAC)
       await connection.query(`
         INSERT INTO roles (name) VALUES
-        ('System Administrator'),
-        ('Pharmacist'),
-        ('Data Clerk / Cashier'),
+        ('Admin'),
+        ('Data Clerk'),
         ('Physician'),
-        ('Ward Nurse'),
+        ('Pharmacist'),
         ('Drug Supplier')
       `);
-      console.log('✓ Default roles inserted');
+      console.log("✓ Default roles inserted");
     } else {
-      console.log('✓ Roles already exist');
+      console.log("✓ Roles already exist");
     }
 
     // Check if admin user exists
-    const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
-    
+    const [users] = await connection.query(
+      "SELECT COUNT(*) as count FROM users",
+    );
+
     if (users[0].count === 0) {
       // Hash password
-      const hashedPassword = await bcrypt.hash('admin123', 10);
-      
+      const hashedPassword = await bcrypt.hash("admin123", 10);
+
       // Insert default admin user
-      await connection.query(`
+      await connection.query(
+        `
         INSERT INTO users (username, email, password, first_name, last_name, is_active) 
         VALUES ('admin', 'admin@haramaya.edu', ?, 'System', 'Administrator', 1)
-      `, [hashedPassword]);
-      
+      `,
+        [hashedPassword],
+      );
+
       // Assign admin role
       await connection.query(`
         INSERT INTO user_roles (user_id, role_id) VALUES (1, 1)
       `);
-      
-      console.log('✓ Default admin user created (username: admin, password: admin123)');
+
+      console.log(
+        "✓ Default admin user created (username: admin, password: admin123)",
+      );
     } else {
-      console.log('✓ Users already exist');
+      console.log("✓ Users already exist");
+    }
+
+    // Insert default categories if they don't exist
+    const [categories] = await connection.query(
+      "SELECT COUNT(*) as count FROM medicine_categories",
+    );
+    if (categories[0].count === 0) {
+      await connection.query(`
+        INSERT INTO medicine_categories (name) VALUES
+        ('Analgesics'),
+        ('Antibiotics'),
+        ('Antivirals'),
+        ('Cardiovascular'),
+        ('Gastrointestinal'),
+        ('Respiratory'),
+        ('Vitamins & Supplements')
+      `);
+      console.log("✓ Default medicine categories inserted");
+    }
+
+    // Insert default types if they don't exist
+    const [types] = await connection.query(
+      "SELECT COUNT(*) as count FROM medicine_types",
+    );
+    if (types[0].count === 0) {
+      await connection.query(`
+        INSERT INTO medicine_types (name) VALUES
+        ('Tablet'),
+        ('Capsule'),
+        ('Syrup'),
+        ('Injection'),
+        ('Cream'),
+        ('Drops'),
+        ('Inhaler')
+      `);
+      console.log("✓ Default medicine types inserted");
     }
   } catch (error) {
-    console.log('⚠ Default data insertion skipped:', error.message);
+    console.log("⚠ Default data insertion skipped:", error.message);
   }
 };
 
