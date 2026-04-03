@@ -22,6 +22,7 @@ app.use('/api/medicines', require('./routes/medicines'));
 app.use('/api/medicine-categories', require('./routes/categories'));
 app.use('/api/medicine-types', require('./routes/types'));
 app.use('/api/suppliers', require('./routes/suppliers'));
+app.use('/api/roles', require('./routes/roles'));
 
 // Health check
 app.get('/health', (req, res) => {

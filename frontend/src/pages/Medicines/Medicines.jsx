@@ -23,7 +23,6 @@ const Medicines = () => {
     type_id: '',
     strength: '',
     unit: '',
-    description: '',
     reorder_level: 10,
     unit_price: '',
     requires_prescription: false,
@@ -89,7 +88,6 @@ const Medicines = () => {
         type_id: medicine.type_id,
         strength: medicine.strength || '',
         unit: medicine.unit,
-        description: medicine.description || '',
         reorder_level: medicine.reorder_level,
         unit_price: medicine.unit_price,
         requires_prescription: medicine.requires_prescription,
@@ -103,7 +101,6 @@ const Medicines = () => {
         type_id: '',
         strength: '',
         unit: '',
-        description: '',
         reorder_level: 10,
         unit_price: '',
         requires_prescription: false,
@@ -315,16 +312,6 @@ const Medicines = () => {
                 onChange={(e) => setFormData({ ...formData, reorder_level: e.target.value })}
               />
             </div>
-          </div>
-
-          <div>
-            <label className="form-label">Description</label>
-            <textarea
-              className="form-input"
-              rows="3"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
           </div>
 
           <div>

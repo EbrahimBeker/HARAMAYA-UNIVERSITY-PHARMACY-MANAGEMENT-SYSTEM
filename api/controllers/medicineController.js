@@ -44,12 +44,12 @@ exports.create = async (req, res, next) => {
   try {
     await connection.beginTransaction();
 
-    const { name, generic_name, category_id, type_id, strength, unit, description, reorder_level, unit_price, requires_prescription } = req.body;
+    const { name, generic_name, category_id, type_id, strength, unit, reorder_level, unit_price, requires_prescription } = req.body;
 
     const [result] = await connection.execute(
-      `INSERT INTO medicines (name, generic_name, category_id, type_id, strength, unit, description, reorder_level, unit_price, requires_prescription)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, generic_name || null, category_id, type_id, strength || null, unit, description || null, reorder_level || 10, unit_price, requires_prescription ? 1 : 0]
+      `INSERT INTO medicines (name, generic_name, category_id, type_id, strength, unit, reorder_level, unit_price, requires_prescription)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, generic_name || null, category_id, type_id, strength || null, unit, reorder_level || 10, unit_price, requires_prescription ? 1 : 0]
     );
 
     const medicineId = result.insertId;
@@ -108,7 +108,7 @@ exports.getOne = async (req, res, next) => {
 exports.update = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, generic_name, category_id, type_id, strength, unit, description, reorder_level, unit_price, requires_prescription } = req.body;
+    const { name, generic_name, category_id, type_id, strength, unit, reorder_level, unit_price, requires_prescription } = req.body;
 
     const updates = [];
     const params = [];
@@ -136,10 +136,6 @@ exports.update = async (req, res, next) => {
     if (unit) {
       updates.push('unit = ?');
       params.push(unit);
-    }
-    if (description !== undefined) {
-      updates.push('description = ?');
-      params.push(description);
     }
     if (reorder_level !== undefined) {
       updates.push('reorder_level = ?');

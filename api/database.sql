@@ -24,7 +24,6 @@ CREATE TABLE users (
 CREATE TABLE roles (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) UNIQUE NOT NULL,
-    description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
@@ -44,7 +43,6 @@ CREATE TABLE user_roles (
 CREATE TABLE medicine_categories (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL,
-    description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
@@ -54,7 +52,6 @@ CREATE TABLE medicine_categories (
 CREATE TABLE medicine_types (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) UNIQUE NOT NULL,
-    description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
@@ -83,7 +80,6 @@ CREATE TABLE medicines (
     type_id BIGINT UNSIGNED NOT NULL,
     strength VARCHAR(50),
     unit VARCHAR(20) NOT NULL,
-    description TEXT,
     reorder_level INT DEFAULT 10,
     unit_price DECIMAL(10,2) NOT NULL,
     requires_prescription BOOLEAN DEFAULT TRUE,
@@ -232,13 +228,13 @@ CREATE TABLE reports (
 ) ENGINE=InnoDB;
 
 -- Insert Default Roles
-INSERT INTO roles (name, description) VALUES
-('System Administrator', 'Full system access and user management'),
-('Pharmacist', 'Manage medicines, dispense prescriptions, stock management'),
-('Data Clerk / Cashier', 'Process sales and handle transactions'),
-('Physician', 'Create and manage prescriptions'),
-('Ward Nurse', 'View prescriptions and medicine information'),
-('Drug Supplier', 'Limited access for supply coordination');
+INSERT INTO roles (name) VALUES
+('System Administrator'),
+('Pharmacist'),
+('Data Clerk / Cashier'),
+('Physician'),
+('Ward Nurse'),
+('Drug Supplier');
 
 -- Insert Default Admin User (password: admin123)
 INSERT INTO users (username, email, password, first_name, last_name, is_active) VALUES
