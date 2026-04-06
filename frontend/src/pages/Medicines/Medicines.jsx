@@ -121,7 +121,7 @@ const Medicines = () => {
         medicine.generic_name.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
-  const canEdit = hasAnyRole(["Admin", "Pharmacist"]);
+  const canEdit = hasAnyRole(["Pharmacist"]);
 
   if (loading) return <Loading />;
 
@@ -211,7 +211,7 @@ const Medicines = () => {
                   <td className="py-3 px-4 text-gray-600">
                     {medicine.strength || "-"}
                   </td>
-                  <td className="py-3 px-4">${medicine.unit_price}</td>
+                  <td className="py-3 px-4">{medicine.unit_price} ETB</td>
                   <td className="py-3 px-4">
                     <span
                       className={`badge ${medicine.quantity_available <= medicine.reorder_level ? "badge-danger" : "badge-success"}`}

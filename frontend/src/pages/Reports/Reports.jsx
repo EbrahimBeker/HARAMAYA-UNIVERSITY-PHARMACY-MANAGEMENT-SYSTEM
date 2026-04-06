@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { medicinesAPI, suppliersAPI } from "../../services/api";
+import { reportsAPI } from "../../services/api";
 import { toast } from "react-toastify";
 import {
   FileText,
@@ -8,6 +8,7 @@ import {
   Package,
   AlertTriangle,
   TrendingUp,
+  Users,
 } from "lucide-react";
 import Loading from "../../components/Common/Loading";
 import { useAuth } from "../../context/AuthContext";
@@ -15,10 +16,12 @@ import { useAuth } from "../../context/AuthContext";
 const Reports = () => {
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState({
-    medicines: [],
+    dashboard: {},
+    patients: [],
+    stock: [],
+    prescriptions: [],
     suppliers: [],
-    lowStockItems: [],
-    totalValue: 0,
+    activity: [],
   });
   const { user, hasAnyRole } = useAuth();
 
@@ -28,33 +31,51 @@ const Reports = () => {
 
   const fetchReportData = async () => {
     try {
-      const [medicinesRes, suppliersRes] = await Promise.all([
-        medicinesAPI.getAll({ limit: 1000 }),
-        suppliersAPI.getAll({ limit: 1000 }),
-      ]);
+      setLoading(true);
 
-      const medicines = medicinesRes.data.data || [];
-      const suppliers = suppliersRes.data.data || [];
+      // Fetch dashboard stats for all users
+      const dashboardRes = await reportsAPI.getDashboard();
+      const dashboardData = dashboardRes.data;
 
-      // Calculate low stock items
-      const lowStockItems = medicines.filter(
-        (med) => (med.quantity_available || 0) <= (med.reorder_level || 10),
+      let stockData = [];
+      let suppliersData = [];
+
+      // Fetch role-specific data
+      if (hasAnyRole(["Pharmacist"])) {
+        try {
+          const [stockRes, suppliersRes] = await Promise.all([
+            reportsAPI.getStock(),
+            reportsAPI.getSuppliers(),
+          ]);
+          stockData = stockRes.data.data || [];
+          suppliersData = suppliersRes.data.data || [];
+        } catch (error) {
+          console.warn("Could not fetch stock/supplier data:", error);
+        }
+      }
+
+      // Calculate derived data
+      const lowStockItems = stockData.filter(
+        (item) =>
+          item.stock_status === "Low Stock" ||
+          item.stock_status === "Out of Stock",
       );
 
-      // Calculate total inventory value
-      const totalValue = medicines.reduce(
-        (sum, med) =>
-          sum + (med.quantity_available || 0) * (med.unit_price || 0),
+      const totalValue = stockData.reduce(
+        (sum, item) => sum + parseFloat(item.stock_value || 0),
         0,
       );
 
       setReportData({
-        medicines,
-        suppliers,
+        dashboard: dashboardData,
+        stock: stockData,
+        suppliers: suppliersData,
         lowStockItems,
         totalValue,
+        medicines: stockData, // For compatibility
       });
     } catch (error) {
+      console.error("Failed to fetch report data:", error);
       toast.error("Failed to fetch report data");
     } finally {
       setLoading(false);
@@ -62,7 +83,7 @@ const Reports = () => {
   };
 
   const generateCSV = (data, filename) => {
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
       toast.warning("No data to export");
       return;
     }
@@ -84,44 +105,108 @@ const Reports = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  const exportMedicinesReport = () => {
-    const exportData = reportData.medicines.map((med) => ({
-      Name: med.name,
-      "Generic Name": med.generic_name || "",
-      Category: med.category_name,
-      Type: med.type_name,
-      "Unit Price": med.unit_price,
-      "Stock Quantity": med.quantity_available || 0,
-      "Reorder Level": med.reorder_level,
-      "Total Value": (
-        (med.quantity_available || 0) * (med.unit_price || 0)
-      ).toFixed(2),
-    }));
-    generateCSV(exportData, "medicines_inventory");
+  const exportMedicinesReport = async () => {
+    try {
+      const response = await reportsAPI.getStock();
+      const stockData = response.data.data || [];
+
+      const exportData = stockData.map((item) => ({
+        Name: item.name,
+        "Generic Name": item.generic_name || "",
+        Category: item.category_name,
+        Type: item.type_name,
+        Strength: item.strength || "",
+        "Unit Price": item.unit_price,
+        "Current Stock": item.current_stock,
+        "Reorder Level": item.reorder_level,
+        "Stock Status": item.stock_status,
+        "Stock Value": item.stock_value,
+      }));
+      generateCSV(exportData, "medicines_inventory");
+    } catch (error) {
+      toast.error("Failed to export medicines report");
+    }
   };
 
-  const exportLowStockReport = () => {
-    const exportData = reportData.lowStockItems.map((med) => ({
-      Name: med.name,
-      "Current Stock": med.quantity_available || 0,
-      "Reorder Level": med.reorder_level,
-      Shortage: med.reorder_level - (med.quantity_available || 0),
-      "Unit Price": med.unit_price,
-      Category: med.category_name,
-    }));
-    generateCSV(exportData, "low_stock_report");
+  const exportLowStockReport = async () => {
+    try {
+      const response = await reportsAPI.getStock({ low_stock_only: true });
+      const lowStockData = response.data.data || [];
+
+      const exportData = lowStockData.map((item) => ({
+        Name: item.name,
+        "Current Stock": item.current_stock,
+        "Reorder Level": item.reorder_level,
+        "Stock Status": item.stock_status,
+        "Unit Price": item.unit_price,
+        Category: item.category_name,
+        "Stock Value": item.stock_value,
+      }));
+      generateCSV(exportData, "low_stock_report");
+    } catch (error) {
+      toast.error("Failed to export low stock report");
+    }
   };
 
-  const exportSuppliersReport = () => {
-    const exportData = reportData.suppliers.map((supplier) => ({
-      Name: supplier.name,
-      "Contact Person": supplier.contact_person || "",
-      Phone: supplier.phone,
-      Email: supplier.email || "",
-      Address: supplier.address || "",
-      Status: supplier.is_active ? "Active" : "Inactive",
-    }));
-    generateCSV(exportData, "suppliers_report");
+  const exportSuppliersReport = async () => {
+    try {
+      const response = await reportsAPI.getSuppliers();
+      const suppliersData = response.data.data || [];
+
+      const exportData = suppliersData.map((supplier) => ({
+        Name: supplier.name,
+        "Contact Person": supplier.contact_person || "",
+        Phone: supplier.phone,
+        Email: supplier.email || "",
+        "Total Orders": supplier.total_orders || 0,
+        "Delivered Orders": supplier.delivered_orders || 0,
+        "Total Value": supplier.total_value || 0,
+        "Last Order Date": supplier.last_order_date || "",
+      }));
+      generateCSV(exportData, "suppliers_report");
+    } catch (error) {
+      toast.error("Failed to export suppliers report");
+    }
+  };
+
+  const exportPatientReport = async () => {
+    try {
+      const response = await reportsAPI.getPatients();
+      const patientsData = response.data.data || [];
+
+      const exportData = patientsData.map((patient) => ({
+        "Patient ID": patient.patient_id,
+        "First Name": patient.first_name,
+        "Last Name": patient.last_name,
+        Gender: patient.gender,
+        Phone: patient.phone,
+        "Registration Date": new Date(
+          patient.registration_date,
+        ).toLocaleDateString(),
+        "Total Prescriptions": patient.total_prescriptions || 0,
+        "Total Diagnoses": patient.total_diagnoses || 0,
+      }));
+      generateCSV(exportData, "patient_report");
+    } catch (error) {
+      toast.error("Failed to export patient report");
+    }
+  };
+
+  const exportSystemActivityReport = async () => {
+    try {
+      const response = await reportsAPI.getActivity();
+      const activityData = response.data.data || [];
+
+      const exportData = activityData.map((activity) => ({
+        Action: activity.action,
+        Table: activity.table_name,
+        User: activity.user_name || activity.username,
+        "Date/Time": new Date(activity.created_at).toLocaleString(),
+      }));
+      generateCSV(exportData, "system_activity_report");
+    } catch (error) {
+      toast.error("Failed to export system activity report");
+    }
   };
 
   if (loading) return <Loading />;
@@ -129,24 +214,65 @@ const Reports = () => {
   // Role-based report filtering
   const getAvailableReports = () => {
     const allReports = [
+      // Admin-specific reports
+      {
+        title: "System Overview",
+        icon: FileText,
+        color: "bg-purple-500",
+        stats: [
+          { label: "Total Users", value: "5" },
+          {
+            label: "Total Patients",
+            value: reportData.dashboard.total_patients || 0,
+          },
+          { label: "System Uptime", value: "99.9%" },
+        ],
+        action: () => exportSystemActivityReport(),
+        actionLabel: "Export System Report",
+        roles: ["Admin"],
+      },
+      {
+        title: "User Activity",
+        icon: Users,
+        color: "bg-indigo-500",
+        stats: [
+          {
+            label: "Total Medicines",
+            value: reportData.dashboard.total_medicines || 0,
+          },
+          {
+            label: "Today's Prescriptions",
+            value: reportData.dashboard.todays_prescriptions || 0,
+          },
+          {
+            label: "Monthly Revenue",
+            value: `${reportData.dashboard.monthly_revenue || 0} ETB`,
+          },
+        ],
+        action: () => exportPatientReport(),
+        actionLabel: "Export Patient Report",
+        roles: ["Admin"],
+      },
+      // Pharmacist-specific reports
       {
         title: "Inventory Summary",
         icon: Package,
         color: "bg-blue-500",
         stats: [
-          { label: "Total Medicines", value: reportData.medicines.length },
+          { label: "Total Medicines", value: reportData.stock.length },
           {
             label: "Total Inventory Value",
             value: `$${reportData.totalValue.toFixed(2)}`,
           },
           {
             label: "Active Suppliers",
-            value: reportData.suppliers.filter((s) => s.is_active).length,
+            value: reportData.suppliers.filter((s) => s.is_active !== false)
+              .length,
           },
         ],
         action: () => exportMedicinesReport(),
         actionLabel: "Export Inventory",
-        roles: ["Admin", "Pharmacist"],
+        roles: ["Pharmacist"],
       },
       {
         title: "Low Stock Alert",
@@ -160,7 +286,7 @@ const Reports = () => {
           {
             label: "Critical Stock Items",
             value: reportData.lowStockItems.filter(
-              (item) => (item.quantity_available || 0) === 0,
+              (item) => item.stock_status === "Out of Stock",
             ).length,
           },
           {
@@ -170,7 +296,7 @@ const Reports = () => {
         ],
         action: () => exportLowStockReport(),
         actionLabel: "Export Low Stock",
-        roles: ["Admin", "Pharmacist"],
+        roles: ["Pharmacist"],
       },
       {
         title: "Supplier Report",
@@ -189,7 +315,7 @@ const Reports = () => {
         ],
         action: () => exportSuppliersReport(),
         actionLabel: "Export Suppliers",
-        roles: ["Admin", "Pharmacist", "Drug Supplier"],
+        roles: ["Pharmacist", "Drug Supplier"],
       },
     ];
 
@@ -202,31 +328,45 @@ const Reports = () => {
   // Role-based available reports in the bottom section
   const getAvailableReportsList = () => {
     const allReportsList = [
+      // Admin reports
+      {
+        title: "System Performance Report",
+        description: "System usage, performance metrics, and health status",
+        action: exportSystemActivityReport,
+        roles: ["Admin"],
+      },
+      {
+        title: "User Management Report",
+        description: "User activity, login history, and role assignments",
+        action: exportSystemActivityReport,
+        roles: ["Admin"],
+      },
+      // Pharmacist reports
       {
         title: "Medicine Inventory Report",
         description:
           "Complete list of all medicines with stock levels and values",
         action: exportMedicinesReport,
-        roles: ["Admin", "Pharmacist"],
+        roles: ["Pharmacist"],
       },
       {
         title: "Low Stock Report",
         description: "Medicines that need immediate restocking attention",
         action: exportLowStockReport,
-        roles: ["Admin", "Pharmacist"],
+        roles: ["Pharmacist"],
       },
       {
         title: "Supplier Directory",
         description: "Complete supplier contact information and status",
         action: exportSuppliersReport,
-        roles: ["Admin", "Pharmacist", "Drug Supplier"],
+        roles: ["Pharmacist", "Drug Supplier"],
       },
+      // Data Clerk reports
       {
         title: "Patient Reports",
         description: "Patient registration and billing reports",
-        action: null,
+        action: exportPatientReport,
         roles: ["Admin", "Data Clerk"],
-        comingSoon: true,
       },
     ];
 
@@ -307,8 +447,8 @@ const Reports = () => {
             ))}
           </div>
 
-          {/* Low Stock Alert Section - Only for Admin and Pharmacist */}
-          {hasAnyRole(["Admin", "Pharmacist"]) &&
+          {/* Low Stock Alert Section - Only for Pharmacist */}
+          {hasAnyRole(["Pharmacist"]) &&
             reportData.lowStockItems.length > 0 && (
               <div className="card bg-red-50 border-red-200 mb-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -388,14 +528,9 @@ const Reports = () => {
                   </p>
                   <button
                     onClick={report.action}
-                    disabled={report.comingSoon}
-                    className={`btn text-sm ${
-                      report.comingSoon
-                        ? "btn-secondary opacity-50 cursor-not-allowed"
-                        : "btn-primary"
-                    }`}
+                    className="btn btn-primary text-sm"
                   >
-                    {report.comingSoon ? "Coming Soon" : "Generate Report"}
+                    Generate Report
                   </button>
                 </div>
               ))}

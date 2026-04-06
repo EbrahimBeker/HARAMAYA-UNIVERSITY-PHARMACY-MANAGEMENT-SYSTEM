@@ -2,15 +2,16 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { patientsAPI } from "../../services/api";
 import { toast } from "react-toastify";
+import PaymentReceipt from "../../components/Common/PaymentReceipt";
 import {
   ArrowLeft,
   Save,
   User,
   Phone,
-  Mail,
-  MapPin,
   Heart,
   AlertTriangle,
+  DollarSign,
+  CreditCard,
 } from "lucide-react";
 
 const PatientRegistration = () => {
@@ -30,13 +31,39 @@ const PatientRegistration = () => {
     allergies: "",
   });
 
+  const [paymentData, setPaymentData] = useState({
+    registration_fee: 100.0, // Default registration fee in ETB
+    payment_method: "cash",
+    payment_received: false,
+    amount_paid: 0,
+    change_amount: 0,
+  });
+
+  const [showReceipt, setShowReceipt] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate payment if required
+    if (!paymentData.payment_received) {
+      toast.error("Please process the registration fee payment first");
+      return;
+    }
+
     try {
       setLoading(true);
-      await patientsAPI.create(formData);
-      toast.success("Patient registered successfully");
-      navigate("/clerk/patients");
+
+      // Include payment information in patient data
+      const patientData = {
+        ...formData,
+        registration_fee_paid: paymentData.registration_fee,
+        payment_method: paymentData.payment_method,
+        payment_status: "paid",
+      };
+
+      await patientsAPI.create(patientData);
+      toast.success("Patient registered successfully with payment processed");
+      setShowReceipt(true); // Show receipt instead of navigating immediately
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed");
     } finally {
@@ -48,6 +75,27 @@ const PatientRegistration = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
+    });
+  };
+
+  const handlePaymentChange = (e) => {
+    const { name, value } = e.target;
+    setPaymentData((prev) => {
+      const updated = { ...prev, [name]: value };
+
+      // Calculate change if cash payment
+      if (name === "amount_paid" && prev.payment_method === "cash") {
+        const amountPaid = parseFloat(value) || 0;
+        updated.change_amount = Math.max(0, amountPaid - prev.registration_fee);
+        updated.payment_received = amountPaid >= prev.registration_fee;
+      } else if (name === "payment_method") {
+        // For non-cash payments, assume payment is processed
+        updated.payment_received = value !== "cash";
+        updated.amount_paid = value === "cash" ? 0 : prev.registration_fee;
+        updated.change_amount = 0;
+      }
+
+      return updated;
     });
   };
 
@@ -260,6 +308,96 @@ const PatientRegistration = () => {
             </div>
           </div>
 
+          {/* Registration Fee Payment */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <DollarSign size={20} />
+              Registration Fee Payment
+            </h2>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-semibold text-gray-900">
+                  Registration Fee:
+                </span>
+                <span className="text-2xl font-bold text-blue-600">
+                  {paymentData.registration_fee.toFixed(2)} ETB
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Method *
+                </label>
+                <select
+                  name="payment_method"
+                  value={paymentData.payment_method}
+                  onChange={handlePaymentChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="cash">Cash</option>
+                  <option value="card">Credit/Debit Card</option>
+                  <option value="mobile_money">Mobile Money</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                </select>
+              </div>
+
+              {paymentData.payment_method === "cash" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Amount Received *
+                  </label>
+                  <input
+                    type="number"
+                    name="amount_paid"
+                    value={paymentData.amount_paid}
+                    onChange={handlePaymentChange}
+                    step="0.01"
+                    min={paymentData.registration_fee}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter amount received"
+                  />
+                </div>
+              )}
+            </div>
+
+            {paymentData.payment_method === "cash" &&
+              paymentData.amount_paid > 0 && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">
+                      Change to give:
+                    </span>
+                    <span className="text-lg font-bold text-green-600">
+                      {paymentData.change_amount.toFixed(2)} ETB
+                    </span>
+                  </div>
+                </div>
+              )}
+
+            {paymentData.payment_received && (
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                <CreditCard className="text-green-600" size={20} />
+                <span className="text-green-700 font-medium">
+                  Payment processed successfully
+                </span>
+              </div>
+            )}
+
+            {!paymentData.payment_received &&
+              paymentData.payment_method === "cash" && (
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <span className="text-yellow-700 text-sm">
+                    Please collect the registration fee before completing
+                    registration
+                  </span>
+                </div>
+              )}
+          </div>
+
           {/* Submit Buttons */}
           <div className="flex justify-end gap-4 pt-6 border-t">
             <button
@@ -271,15 +409,34 @@ const PatientRegistration = () => {
             </button>
             <button
               type="submit"
-              disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+              disabled={loading || !paymentData.payment_received}
+              className={`px-6 py-2 rounded-lg flex items-center gap-2 ${
+                paymentData.payment_received
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              } disabled:opacity-50`}
             >
               <Save size={18} />
-              {loading ? "Registering..." : "Register Patient"}
+              {loading
+                ? "Registering..."
+                : paymentData.payment_received
+                  ? "Register Patient"
+                  : "Payment Required"}
             </button>
           </div>
         </form>
       </div>
+
+      {/* Payment Receipt Modal */}
+      <PaymentReceipt
+        isOpen={showReceipt}
+        onClose={() => {
+          setShowReceipt(false);
+          navigate("/clerk/patients");
+        }}
+        patientData={formData}
+        paymentData={paymentData}
+      />
     </div>
   );
 };

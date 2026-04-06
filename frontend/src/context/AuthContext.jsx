@@ -21,14 +21,19 @@ export const AuthProvider = ({ children }) => {
   }, [tokenKey, userKey]);
 
   const login = async (credentials) => {
-    const response = await authAPI.login(credentials);
-    const { token, user } = response.data;
+    try {
+      const response = await authAPI.login(credentials);
+      const { token, user } = response.data;
 
-    localStorage.setItem(tokenKey, token);
-    localStorage.setItem(userKey, JSON.stringify(user));
-    setUser(user);
+      localStorage.setItem(tokenKey, token);
+      localStorage.setItem(userKey, JSON.stringify(user));
+      setUser(user);
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+      // Re-throw the error so the Login component can handle it
+      throw error;
+    }
   };
 
   const logout = async () => {

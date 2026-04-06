@@ -111,7 +111,7 @@ const Billing = () => {
               <p className="text-sm font-medium text-gray-600">
                 Today's Revenue
               </p>
-              <p className="text-2xl font-semibold text-gray-900">$0</p>
+              <p className="text-2xl font-semibold text-gray-900">0 ETB</p>
             </div>
           </div>
         </div>
@@ -137,7 +137,7 @@ const Billing = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Monthly Total</p>
-              <p className="text-2xl font-semibold text-gray-900">$0</p>
+              <p className="text-2xl font-semibold text-gray-900">0 ETB</p>
             </div>
           </div>
         </div>
@@ -242,7 +242,7 @@ const Billing = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          ${prescription.total_amount || "0.00"}
+                          {prescription.total_amount || "0.00"} ETB
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -286,7 +286,7 @@ const Billing = () => {
             <form onSubmit={handleSubmitBill} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Amount ($)
+                  Amount (ETB)
                 </label>
                 <input
                   type="number"

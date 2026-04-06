@@ -55,6 +55,13 @@ const PharmacistDashboard = () => {
 
   const pharmacistModules = [
     {
+      title: "Drug Dispensing",
+      description: "Dispense medications and process prescriptions",
+      icon: "💊",
+      link: "/pharmacist/dispensing",
+      color: "bg-blue-500",
+    },
+    {
       title: "Medicine Inventory",
       description: "Manage medicine stock and inventory",
       icon: "📦",
@@ -74,13 +81,6 @@ const PharmacistDashboard = () => {
       icon: "📊",
       link: "/reports",
       color: "bg-orange-500",
-    },
-    {
-      title: "System Dashboard",
-      description: "Access main system dashboard",
-      icon: "💊",
-      link: "/dashboard",
-      color: "bg-blue-500",
     },
   ];
 

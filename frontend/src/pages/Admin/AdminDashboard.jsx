@@ -38,18 +38,18 @@ const AdminDashboard = () => {
       color: "bg-green-500",
     },
     {
-      title: "Medicine Management",
-      description: "Manage medicines, categories, and types",
-      icon: "💊",
-      link: "/medicines",
-      color: "bg-red-500",
+      title: "System Settings",
+      description: "Configure system settings and preferences",
+      icon: "⚙️",
+      link: "#",
+      color: "bg-purple-500",
     },
     {
-      title: "Supplier Management",
-      description: "Manage drug suppliers and purchase orders",
-      icon: "🏢",
-      link: "/suppliers",
-      color: "bg-yellow-500",
+      title: "Audit Logs",
+      description: "View system activity and audit trails",
+      icon: "📋",
+      link: "#",
+      color: "bg-orange-500",
     },
   ];
 
@@ -229,7 +229,7 @@ const AdminDashboard = () => {
                     Monthly Revenue
                   </span>
                   <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">
-                    ${stats.monthly_revenue || 0}
+                    {stats.monthly_revenue || 0} ETB
                   </span>
                 </div>
               </div>

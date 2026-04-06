@@ -146,7 +146,7 @@ const SupplierDashboard = () => {
               <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                 Monthly Revenue
               </p>
-              <p className="text-3xl font-bold text-gray-900">$0</p>
+              <p className="text-3xl font-bold text-gray-900">0 ETB</p>
               <p className="text-xs text-purple-600 font-medium">This month</p>
             </div>
           </div>

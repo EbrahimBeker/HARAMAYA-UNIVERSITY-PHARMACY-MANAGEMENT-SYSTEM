@@ -19,6 +19,9 @@ import PhysicianDashboard from "./pages/Physician/PhysicianDashboard";
 import PharmacistDashboard from "./pages/Pharmacist/PharmacistDashboard";
 import SupplierDashboard from "./pages/Supplier/SupplierDashboard";
 
+// Pharmacist specific pages
+import DrugDispensing from "./pages/Pharmacist/DrugDispensing";
+
 // Data Clerk specific pages
 import PatientRegistration from "./pages/DataClerk/PatientRegistration";
 import PatientRecords from "./pages/DataClerk/PatientRecords";
@@ -191,6 +194,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="pharmacist/dispensing"
+                element={
+                  <ProtectedRoute roles={["Pharmacist"]}>
+                    <DrugDispensing />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Supplier Routes */}
               <Route
@@ -222,9 +233,7 @@ function App() {
               <Route
                 path="medicines"
                 element={
-                  <ProtectedRoute
-                    roles={["Admin", "Pharmacist", "Data Clerk", "Physician"]}
-                  >
+                  <ProtectedRoute roles={["Pharmacist", "Physician"]}>
                     <Medicines />
                   </ProtectedRoute>
                 }
@@ -232,7 +241,7 @@ function App() {
               <Route
                 path="suppliers"
                 element={
-                  <ProtectedRoute roles={["Admin", "Pharmacist"]}>
+                  <ProtectedRoute roles={["Pharmacist"]}>
                     <Suppliers />
                   </ProtectedRoute>
                 }

@@ -30,7 +30,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only redirect to login on 401 if it's not a login request
+    if (
+      error.response?.status === 401 &&
+      !error.config?.url?.includes("/auth/login")
+    ) {
       const tokenKey = import.meta.env.VITE_TOKEN_STORAGE_KEY || "token";
       const userKey = import.meta.env.VITE_USER_STORAGE_KEY || "user";
       localStorage.removeItem(tokenKey);

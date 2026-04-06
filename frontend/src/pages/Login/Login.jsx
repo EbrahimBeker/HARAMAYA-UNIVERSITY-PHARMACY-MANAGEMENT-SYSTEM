@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
+import axios from "axios";
 import {
   Pill,
   Lock,
   User,
   Database,
-  CheckCircle,
   Eye,
   EyeOff,
   Shield,
@@ -22,6 +22,7 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
   const [systemStatus, setSystemStatus] = useState({ api: false, db: false });
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -32,8 +33,8 @@ const Login = () => {
 
   const checkSystemStatus = async () => {
     try {
-      const response = await fetch("http://localhost:5000/health");
-      if (response.ok) {
+      const response = await axios.get("http://localhost:5000/health");
+      if (response.status === 200) {
         setSystemStatus({ api: true, db: true });
       }
     } catch (error) {
@@ -43,7 +44,18 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+
+    // Clear any previous errors
+    setError("");
     setLoading(true);
+
+    // Basic validation
+    if (!credentials.username.trim() || !credentials.password.trim()) {
+      setError("Please enter both username and password");
+      setLoading(false);
+      return;
+    }
 
     try {
       const result = await login(credentials);
@@ -76,7 +88,27 @@ const Login = () => {
         navigate("/");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed");
+      console.error("Login error:", error);
+
+      let errorMessage = "Login failed. Please try again.";
+
+      if (error.response) {
+        // Server responded with error status
+        if (error.response.status === 401) {
+          errorMessage = "Invalid username or password";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.request) {
+        // Network error
+        errorMessage =
+          "Unable to connect to server. Please check your connection.";
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -169,6 +201,20 @@ const Login = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Error Display */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">!</span>
+                      </div>
+                      <p className="text-red-700 font-medium text-sm">
+                        {error}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Username Field */}
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
@@ -178,14 +224,18 @@ const Login = () => {
                   <div className="relative">
                     <input
                       type="text"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                      className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400 ${
+                        error ? "border-red-300 bg-red-50" : "border-gray-200"
+                      }`}
                       value={credentials.username}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setCredentials({
                           ...credentials,
                           username: e.target.value,
-                        })
-                      }
+                        });
+                        // Clear error when user starts typing
+                        if (error) setError("");
+                      }}
                       required
                       placeholder="Enter your username"
                     />
@@ -201,14 +251,18 @@ const Login = () => {
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
-                      className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                      className={`w-full px-4 py-3 pr-12 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400 ${
+                        error ? "border-red-300 bg-red-50" : "border-gray-200"
+                      }`}
                       value={credentials.password}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setCredentials({
                           ...credentials,
                           password: e.target.value,
-                        })
-                      }
+                        });
+                        // Clear error when user starts typing
+                        if (error) setError("");
+                      }}
                       required
                       placeholder="Enter your password"
                     />

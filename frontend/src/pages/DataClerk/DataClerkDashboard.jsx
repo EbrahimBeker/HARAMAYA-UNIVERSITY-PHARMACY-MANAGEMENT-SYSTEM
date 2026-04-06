@@ -138,7 +138,7 @@ const DataClerkDashboard = () => {
                 Monthly Revenue
               </p>
               <p className="text-3xl font-bold text-gray-900">
-                ${stats.monthly_revenue || 0}
+                {stats.monthly_revenue || 0} ETB
               </p>
               <p className="text-xs text-purple-600 font-medium">
                 +8% vs last month
