@@ -203,7 +203,7 @@ const PharmacyReports = () => {
                   <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
                     <DollarSign size={16} className="text-white" />
                     <span className="text-sm font-semibold text-white">
-                      ${totalSales.toFixed(2)} Revenue
+                      {totalSales.toFixed(2)} ETB Revenue
                     </span>
                   </div>
                   <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
@@ -302,7 +302,7 @@ const PharmacyReports = () => {
                   Total Sales
                 </p>
                 <p className="text-3xl font-bold mt-2">
-                  ${totalSales.toFixed(2)}
+                  {totalSales.toFixed(2)} ETB
                 </p>
                 <p className="text-xs text-blue-100 mt-1">Revenue generated</p>
               </div>
@@ -334,7 +334,7 @@ const PharmacyReports = () => {
                   Avg Transaction
                 </p>
                 <p className="text-3xl font-bold mt-2">
-                  ${averageTransaction.toFixed(2)}
+                  {averageTransaction.toFixed(2)} ETB
                 </p>
                 <p className="text-xs text-purple-100 mt-1">Per sale average</p>
               </div>
@@ -493,7 +493,9 @@ const PharmacyReports = () => {
             <div className="space-y-3 mb-4">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Total Revenue</span>
-                <span className="font-semibold">${totalSales.toFixed(2)}</span>
+                <span className="font-semibold">
+                  {totalSales.toFixed(2)} ETB
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">

@@ -615,7 +615,7 @@ const StockIn = () => {
                         {stock.supplier_name}
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-900">
-                        ${parseFloat(stock.unit_cost).toFixed(2)}
+                        {parseFloat(stock.unit_cost).toFixed(2)} ETB
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-600">
                         {stock.received_by_name}

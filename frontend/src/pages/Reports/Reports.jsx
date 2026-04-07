@@ -262,7 +262,7 @@ const Reports = () => {
           { label: "Total Medicines", value: reportData.stock.length },
           {
             label: "Total Inventory Value",
-            value: `$${reportData.totalValue.toFixed(2)}`,
+            value: `${reportData.totalValue.toFixed(2)} ETB`,
           },
           {
             label: "Active Suppliers",

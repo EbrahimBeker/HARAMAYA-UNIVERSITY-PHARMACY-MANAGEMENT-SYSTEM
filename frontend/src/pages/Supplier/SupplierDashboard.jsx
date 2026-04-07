@@ -241,7 +241,7 @@ const SupplierDashboard = () => {
                       {new Date(order.order_date).toLocaleDateString()}
                     </td>
                     <td className="font-semibold text-gray-900">
-                      ${order.total_amount || 0}
+                      {order.total_amount || 0} ETB
                     </td>
                     <td>
                       <span

@@ -11,7 +11,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
-  Bell,
   User,
   Activity,
   ShoppingCart,
@@ -209,19 +208,6 @@ const Sidebar = () => {
 
       {/* Bottom Actions */}
       <div className="border-t border-blue-100/50 p-2 backdrop-blur-sm">
-        <button
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-white/60 hover:shadow-md transition-all backdrop-blur-sm ${collapsed ? "justify-center" : ""}`}
-          title={collapsed ? "Notifications" : ""}
-        >
-          <div className="relative">
-            <Bell size={20} className="text-gray-500" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full shadow-lg shadow-red-500/50"></span>
-          </div>
-          {!collapsed && (
-            <span className="text-sm font-medium">Notifications</span>
-          )}
-        </button>
-
         <button
           onClick={handleLogout}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-600 hover:bg-red-50/60 hover:shadow-md transition-all backdrop-blur-sm ${collapsed ? "justify-center" : ""}`}

@@ -187,7 +187,7 @@ const DrugDispensing = () => {
                 Cart: {cartItems.length} items
               </div>
               <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                Total: ${cartTotal.toFixed(2)}
+                Total: {cartTotal.toFixed(2)} ETB
               </div>
             </div>
           </div>
@@ -259,7 +259,7 @@ const DrugDispensing = () => {
                       <div className="flex items-center justify-between">
                         <div className="text-lg font-bold text-blue-600 flex items-center gap-1">
                           <DollarSign size={16} />
-                          {medicine.unit_price}
+                          {medicine.unit_price} ETB
                         </div>
                         <button
                           onClick={() => handleAddMedicineToCart(medicine)}
@@ -441,7 +441,7 @@ const DrugDispensing = () => {
                         {item.medicine_name} x {item.quantity}
                       </span>
                       <span>
-                        ${(item.quantity * item.unit_price).toFixed(2)}
+                        {(item.quantity * item.unit_price).toFixed(2)} ETB
                       </span>
                     </div>
                   ))}
@@ -570,11 +570,11 @@ const DrugDispensing = () => {
                       <div>
                         <p className="font-medium">{item.medicine_name}</p>
                         <p className="text-gray-500">
-                          Qty: {item.quantity} × ${item.unit_price}
+                          Qty: {item.quantity} × {item.unit_price} ETB
                         </p>
                       </div>
                       <p className="font-medium">
-                        ${item.total_price.toFixed(2)}
+                        {item.total_price.toFixed(2)} ETB
                       </p>
                     </div>
                   ))}
@@ -586,12 +586,12 @@ const DrugDispensing = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
-                    <span>${lastTransaction.total_amount.toFixed(2)}</span>
+                    <span>{lastTransaction.total_amount.toFixed(2)} ETB</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg border-t pt-2">
                     <span>Total:</span>
                     <span className="text-green-600">
-                      ${lastTransaction.total_amount.toFixed(2)}
+                      {lastTransaction.total_amount.toFixed(2)} ETB
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -602,12 +602,14 @@ const DrugDispensing = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>Amount Paid:</span>
-                    <span>${lastTransaction.amount_paid.toFixed(2)}</span>
+                    <span>{lastTransaction.amount_paid.toFixed(2)} ETB</span>
                   </div>
                   {lastTransaction.change_amount > 0 && (
                     <div className="flex justify-between text-green-600 font-medium">
                       <span>Change:</span>
-                      <span>${lastTransaction.change_amount.toFixed(2)}</span>
+                      <span>
+                        {lastTransaction.change_amount.toFixed(2)} ETB
+                      </span>
                     </div>
                   )}
                 </div>
