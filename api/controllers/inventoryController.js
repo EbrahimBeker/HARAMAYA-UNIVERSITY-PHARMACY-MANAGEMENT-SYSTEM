@@ -65,6 +65,48 @@ exports.receiveStock = async (req, res, next) => {
       notes,
     } = req.body;
 
+    // Additional business logic validation
+    // Check if medicine exists
+    const [medicine] = await connection.execute(
+      "SELECT id, name FROM medicines WHERE id = ? AND deleted_at IS NULL",
+      [medicine_id],
+    );
+
+    if (medicine.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Medicine not found" });
+    }
+
+    // Check if supplier exists
+    const [supplier] = await connection.execute(
+      "SELECT id, name FROM suppliers WHERE id = ? AND deleted_at IS NULL",
+      [supplier_id],
+    );
+
+    if (supplier.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+
+    // Check for duplicate batch number for the same medicine
+    const [existingBatch] = await connection.execute(
+      "SELECT id FROM stock_in WHERE medicine_id = ? AND batch_number = ? AND expiry_date = ?",
+      [medicine_id, batch_number.toUpperCase(), expiry_date],
+    );
+
+    if (existingBatch.length > 0) {
+      await connection.rollback();
+      return res.status(400).json({
+        message:
+          "This batch number already exists for this medicine with the same expiry date. Please use a different batch number or update the existing batch.",
+      });
+    }
+
+    // Convert undefined to null for optional fields
+    const manufactureDate = manufacture_date || null;
+    const purchaseOrderId = purchase_order_id || null;
+    const notesValue = notes || null;
+
     // Record stock in
     await connection.execute(
       `INSERT INTO stock_in (
@@ -74,14 +116,14 @@ exports.receiveStock = async (req, res, next) => {
       [
         medicine_id,
         supplier_id,
-        purchase_order_id,
-        batch_number,
+        purchaseOrderId,
+        batch_number.toUpperCase(),
         quantity,
         unit_cost,
-        manufacture_date,
+        manufactureDate,
         expiry_date,
         req.user.id,
-        notes,
+        notesValue,
       ],
     );
 
@@ -98,13 +140,26 @@ exports.receiveStock = async (req, res, next) => {
       `INSERT INTO expiry_tracking (medicine_id, batch_number, quantity_remaining, expiry_date)
        VALUES (?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE quantity_remaining = quantity_remaining + ?`,
-      [medicine_id, batch_number, quantity, expiry_date, quantity],
+      [
+        medicine_id,
+        batch_number.toUpperCase(),
+        quantity,
+        expiry_date,
+        quantity,
+      ],
     );
 
     await connection.commit();
 
     res.status(201).json({
       message: "Stock received successfully",
+      data: {
+        medicine: medicine[0].name,
+        supplier: supplier[0].name,
+        batch_number: batch_number.toUpperCase(),
+        quantity,
+        unit_cost,
+      },
     });
   } catch (error) {
     await connection.rollback();

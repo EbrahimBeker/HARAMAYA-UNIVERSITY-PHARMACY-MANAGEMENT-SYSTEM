@@ -69,26 +69,115 @@ const StockIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
+    // Comprehensive Validation
+    const errors = [];
+
+    // Required field validation
+    if (!formData.medicine_id) {
+      errors.push("Please select a medicine");
+    }
+    if (!formData.supplier_id) {
+      errors.push("Please select a supplier");
+    }
+    if (!formData.batch_number || formData.batch_number.trim() === "") {
+      errors.push("Batch number is required");
+    }
+    if (!formData.quantity || parseInt(formData.quantity) <= 0) {
+      errors.push("Quantity must be greater than 0");
+    }
+    if (!formData.unit_cost || parseFloat(formData.unit_cost) <= 0) {
+      errors.push("Unit cost must be greater than 0");
+    }
+    if (!formData.expiry_date) {
+      errors.push("Expiry date is required");
+    }
+
+    // Date validations
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (formData.expiry_date) {
+      const expiryDate = new Date(formData.expiry_date);
+      if (expiryDate <= today) {
+        errors.push("Expiry date must be in the future");
+      }
+    }
+
+    if (formData.manufacture_date) {
+      const manufactureDate = new Date(formData.manufacture_date);
+      if (manufactureDate > today) {
+        errors.push("Manufacture date cannot be in the future");
+      }
+
+      if (formData.expiry_date) {
+        const expiryDate = new Date(formData.expiry_date);
+        if (manufactureDate >= expiryDate) {
+          errors.push("Manufacture date must be before expiry date");
+        }
+      }
+    }
+
+    // Batch number format validation (alphanumeric and hyphens)
     if (
-      !formData.medicine_id ||
-      !formData.supplier_id ||
-      !formData.batch_number ||
-      !formData.quantity ||
-      !formData.unit_cost ||
-      !formData.expiry_date
+      formData.batch_number &&
+      !/^[A-Za-z0-9-]+$/.test(formData.batch_number)
     ) {
-      toast.error("Please fill in all required fields");
+      errors.push(
+        "Batch number can only contain letters, numbers, and hyphens",
+      );
+    }
+
+    // Quantity validation
+    if (formData.quantity && parseInt(formData.quantity) > 1000000) {
+      errors.push("Quantity seems too large. Please verify.");
+    }
+
+    // Unit cost validation
+    if (formData.unit_cost && parseFloat(formData.unit_cost) > 100000) {
+      errors.push("Unit cost seems too high. Please verify.");
+    }
+
+    // Purchase Order ID validation
+    if (
+      formData.purchase_order_id &&
+      parseInt(formData.purchase_order_id) <= 0
+    ) {
+      errors.push("Purchase Order ID must be a positive number");
+    }
+
+    // Display all errors
+    if (errors.length > 0) {
+      errors.forEach((error) => toast.error(error));
       return;
     }
 
     try {
       setLoading(true);
-      await inventoryAPI.receiveStock({
-        ...formData,
+
+      // Prepare data - only include non-empty values
+      const dataToSend = {
+        medicine_id: parseInt(formData.medicine_id),
+        supplier_id: parseInt(formData.supplier_id),
+        batch_number: formData.batch_number.trim().toUpperCase(),
         quantity: parseInt(formData.quantity),
         unit_cost: parseFloat(formData.unit_cost),
-      });
+        expiry_date: formData.expiry_date,
+      };
+
+      // Add optional fields only if they have values
+      if (formData.manufacture_date) {
+        dataToSend.manufacture_date = formData.manufacture_date;
+      }
+
+      if (formData.purchase_order_id) {
+        dataToSend.purchase_order_id = parseInt(formData.purchase_order_id);
+      }
+
+      if (formData.notes && formData.notes.trim()) {
+        dataToSend.notes = formData.notes.trim();
+      }
+
+      await inventoryAPI.receiveStock(dataToSend);
 
       toast.success("Stock received successfully!");
 
@@ -106,6 +195,7 @@ const StockIn = () => {
       });
 
       setShowForm(false);
+      setSearchTerm("");
 
       // Reload recent stock ins
       const movementsRes = await inventoryAPI.getMovements({
@@ -115,7 +205,11 @@ const StockIn = () => {
       setRecentStockIns(movementsRes.data.data || []);
     } catch (error) {
       console.error("Failed to receive stock:", error);
-      toast.error(error.response?.data?.message || "Failed to receive stock");
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.errors?.[0]?.msg ||
+        "Failed to receive stock";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -217,38 +311,63 @@ const StockIn = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Medicine Selection */}
-                <div>
+                <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Medicine <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Search
-                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10"
                       size={18}
                     />
                     <input
                       type="text"
-                      placeholder="Search medicine..."
+                      placeholder="Type to search medicine..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
+                      onFocus={() => setSearchTerm("")}
                       className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
                     />
                   </div>
-                  <select
-                    name="medicine_id"
-                    value={formData.medicine_id}
-                    onChange={handleInputChange}
-                    required
-                    className="mt-2 w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
-                  >
-                    <option value="">Select Medicine</option>
-                    {filteredMedicines.map((med) => (
-                      <option key={med.id} value={med.id}>
-                        {med.name} {med.generic_name && `(${med.generic_name})`}{" "}
-                        - {med.strength} {med.unit}
+                  <div className="relative mt-2">
+                    <select
+                      name="medicine_id"
+                      value={formData.medicine_id}
+                      onChange={handleInputChange}
+                      required
+                      size={
+                        filteredMedicines.length > 0 && searchTerm
+                          ? Math.min(filteredMedicines.length, 8)
+                          : 1
+                      }
+                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
+                    >
+                      <option value="">
+                        {searchTerm
+                          ? `${filteredMedicines.length} medicine(s) found`
+                          : "Select Medicine"}
                       </option>
-                    ))}
-                  </select>
+                      {filteredMedicines.map((med) => (
+                        <option key={med.id} value={med.id}>
+                          {med.name}{" "}
+                          {med.generic_name && `(${med.generic_name})`} -{" "}
+                          {med.strength} {med.unit}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {formData.medicine_id && (
+                    <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-800 font-medium">
+                        ✓ Selected:{" "}
+                        {
+                          medicines.find(
+                            (m) => m.id === parseInt(formData.medicine_id),
+                          )?.name
+                        }
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Supplier */}

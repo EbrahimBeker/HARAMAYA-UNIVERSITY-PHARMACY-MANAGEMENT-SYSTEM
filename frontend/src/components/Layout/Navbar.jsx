@@ -63,24 +63,6 @@ const Navbar = () => {
       roles: ["Pharmacist", "Physician"],
     },
     {
-      label: "Drug Dispensing",
-      icon: Package,
-      path: "/pharmacist/dispensing",
-      roles: ["Pharmacist"],
-    },
-    {
-      label: "Stock In",
-      icon: Package,
-      path: "/pharmacist/stock-in",
-      roles: ["Pharmacist"],
-    },
-    {
-      label: "Pharmacy Reports",
-      icon: FileText,
-      path: "/pharmacist/reports",
-      roles: ["Pharmacist"],
-    },
-    {
       label: "Suppliers",
       icon: Package,
       path: "/suppliers",

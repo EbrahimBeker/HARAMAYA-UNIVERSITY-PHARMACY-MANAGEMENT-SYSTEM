@@ -60,6 +60,8 @@ const PharmacistDashboard = () => {
       icon: "💊",
       link: "/pharmacist/dispensing",
       color: "bg-blue-500",
+      badge: stats.pending_prescriptions || 0,
+      badgeLabel: "Pending",
     },
     {
       title: "Stock In",
@@ -74,13 +76,15 @@ const PharmacistDashboard = () => {
       icon: "🏥",
       link: "/medicines",
       color: "bg-purple-500",
+      badge: stats.low_stock_medicines || 0,
+      badgeLabel: "Low Stock",
     },
     {
       title: "Supplier Management",
       description: "Manage suppliers and orders",
       icon: "🏢",
       link: "/suppliers",
-      color: "bg-purple-500",
+      color: "bg-indigo-500",
     },
     {
       title: "Pharmacy Reports",
@@ -198,7 +202,7 @@ const PharmacistDashboard = () => {
           <span className="w-1 h-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
           Pharmacy Tools
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pharmacistModules.map((module, index) => (
             <Link
               key={index}
@@ -211,11 +215,26 @@ const PharmacistDashboard = () => {
               ></div>
 
               <div className="relative z-10">
-                <div
-                  className={`w-14 h-14 ${module.color} rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
-                >
-                  <span className="text-2xl text-white">{module.icon}</span>
+                <div className="flex items-start justify-between mb-4">
+                  <div
+                    className={`w-14 h-14 ${module.color} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
+                  >
+                    <span className="text-2xl text-white">{module.icon}</span>
+                  </div>
+
+                  {/* Badge for notifications */}
+                  {module.badge > 0 && (
+                    <div className="flex flex-col items-end">
+                      <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                        {module.badge}
+                      </span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        {module.badgeLabel}
+                      </span>
+                    </div>
+                  )}
                 </div>
+
                 <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                   {module.title}
                 </h3>
@@ -224,9 +243,9 @@ const PharmacistDashboard = () => {
                 </p>
 
                 {/* Arrow indicator */}
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">→</span>
+                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-white text-sm font-bold">→</span>
                   </div>
                 </div>
               </div>
