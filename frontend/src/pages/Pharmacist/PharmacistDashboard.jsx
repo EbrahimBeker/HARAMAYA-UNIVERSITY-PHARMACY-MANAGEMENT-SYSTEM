@@ -62,11 +62,18 @@ const PharmacistDashboard = () => {
       color: "bg-blue-500",
     },
     {
+      title: "Stock In",
+      description: "Add purchased drugs to inventory",
+      icon: "📦",
+      link: "/pharmacist/stock-in",
+      color: "bg-green-500",
+    },
+    {
       title: "Medicine Inventory",
       description: "Manage medicine stock and inventory",
-      icon: "📦",
+      icon: "🏥",
       link: "/medicines",
-      color: "bg-green-500",
+      color: "bg-purple-500",
     },
     {
       title: "Supplier Management",

@@ -431,8 +431,8 @@ const PharmacyReports = () => {
           </div>
         )}
 
-        {/* Daily Sales Chart */}
-        {reportData.dailySales.length > 0 && (
+        {/* Daily Sales Chart - REMOVED */}
+        {/* {reportData.dailySales.length > 0 && (
           <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-100">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl">
@@ -478,7 +478,7 @@ const PharmacyReports = () => {
               sales data.
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Report Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

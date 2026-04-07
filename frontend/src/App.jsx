@@ -22,6 +22,7 @@ import SupplierDashboard from "./pages/Supplier/SupplierDashboard";
 // Pharmacist specific pages
 import DrugDispensing from "./pages/Pharmacist/DrugDispensing";
 import PharmacyReports from "./pages/Pharmacist/PharmacyReports";
+import StockIn from "./pages/Pharmacist/StockIn";
 
 // Data Clerk specific pages
 import PatientRegistration from "./pages/DataClerk/PatientRegistration";
@@ -208,6 +209,14 @@ function App() {
                 element={
                   <ProtectedRoute roles={["Pharmacist"]}>
                     <PharmacyReports />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="pharmacist/stock-in"
+                element={
+                  <ProtectedRoute roles={["Pharmacist"]}>
+                    <StockIn />
                   </ProtectedRoute>
                 }
               />
