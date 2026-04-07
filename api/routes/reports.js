@@ -43,4 +43,29 @@ router.get(
   reportController.getSystemActivityReport,
 );
 
+// Pharmacy-specific reports
+router.get(
+  "/pharmacy/sales",
+  checkPermission("view_stock_reports", "view_all_reports"),
+  reportController.getPharmacySalesReport,
+);
+
+router.get(
+  "/pharmacy/inventory",
+  checkPermission("view_stock_reports", "view_all_reports"),
+  reportController.getPharmacyInventoryReport,
+);
+
+router.get(
+  "/pharmacy/performance",
+  checkPermission("view_stock_reports", "view_all_reports"),
+  reportController.getPharmacyPerformanceReport,
+);
+
+router.get(
+  "/pharmacy/dashboard",
+  checkPermission("view_stock_reports", "view_all_reports"),
+  reportController.getPharmacyDashboardStats,
+);
+
 module.exports = router;

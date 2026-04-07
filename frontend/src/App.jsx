@@ -21,6 +21,7 @@ import SupplierDashboard from "./pages/Supplier/SupplierDashboard";
 
 // Pharmacist specific pages
 import DrugDispensing from "./pages/Pharmacist/DrugDispensing";
+import PharmacyReports from "./pages/Pharmacist/PharmacyReports";
 
 // Data Clerk specific pages
 import PatientRegistration from "./pages/DataClerk/PatientRegistration";
@@ -199,6 +200,14 @@ function App() {
                 element={
                   <ProtectedRoute roles={["Pharmacist"]}>
                     <DrugDispensing />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="pharmacist/reports"
+                element={
+                  <ProtectedRoute roles={["Pharmacist"]}>
+                    <PharmacyReports />
                   </ProtectedRoute>
                 }
               />

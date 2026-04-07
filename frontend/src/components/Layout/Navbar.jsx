@@ -69,6 +69,12 @@ const Navbar = () => {
       roles: ["Pharmacist"],
     },
     {
+      label: "Pharmacy Reports",
+      icon: FileText,
+      path: "/pharmacist/reports",
+      roles: ["Pharmacist"],
+    },
+    {
       label: "Suppliers",
       icon: Package,
       path: "/suppliers",
@@ -84,7 +90,7 @@ const Navbar = () => {
       label: "Reports",
       icon: FileText,
       path: "/reports",
-      roles: ["Admin", "Pharmacist", "Data Clerk", "Drug Supplier"],
+      roles: ["Admin", "Data Clerk", "Drug Supplier"],
     },
   ];
 

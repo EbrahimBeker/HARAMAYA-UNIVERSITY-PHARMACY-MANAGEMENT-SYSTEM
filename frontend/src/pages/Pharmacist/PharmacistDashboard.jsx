@@ -76,10 +76,10 @@ const PharmacistDashboard = () => {
       color: "bg-purple-500",
     },
     {
-      title: "Stock Reports",
-      description: "View inventory and stock reports",
+      title: "Pharmacy Reports",
+      description: "Comprehensive pharmacy analytics and reports",
       icon: "📊",
-      link: "/reports",
+      link: "/pharmacist/reports",
       color: "bg-orange-500",
     },
   ];

@@ -107,6 +107,13 @@ export const reportsAPI = {
   getPrescriptions: (params) => api.get("/reports/prescriptions", { params }),
   getSuppliers: (params) => api.get("/reports/suppliers", { params }),
   getActivity: (params) => api.get("/reports/activity", { params }),
+  // Pharmacy-specific reports
+  getPharmacySales: (params) => api.get("/reports/pharmacy/sales", { params }),
+  getPharmacyInventory: (params) =>
+    api.get("/reports/pharmacy/inventory", { params }),
+  getPharmacyPerformance: (params) =>
+    api.get("/reports/pharmacy/performance", { params }),
+  getPharmacyDashboard: () => api.get("/reports/pharmacy/dashboard"),
 };
 
 // Backup API
@@ -156,6 +163,13 @@ export const suppliersAPI = {
 // Roles API
 export const rolesAPI = {
   getAll: () => api.get("/roles"),
+};
+
+// Sales API
+export const salesAPI = {
+  processSale: (data) => api.post("/sales", data),
+  getAll: (params) => api.get("/sales", { params }),
+  getOne: (id) => api.get(`/sales/${id}`),
 };
 
 export default api;
