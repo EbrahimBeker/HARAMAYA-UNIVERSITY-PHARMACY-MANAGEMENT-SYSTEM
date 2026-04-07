@@ -16,11 +16,9 @@ const PharmacistDashboard = () => {
     try {
       setLoading(true);
 
-      // Load dashboard stats first
       const statsResponse = await reportsAPI.getDashboard();
       setStats(statsResponse.data);
 
-      // Try to load prescriptions and inventory, but handle errors gracefully
       try {
         const prescriptionsResponse = await prescriptionsAPI.getPending();
         setPendingPrescriptions(prescriptionsResponse.data.data || []);
@@ -44,7 +42,6 @@ const PharmacistDashboard = () => {
       }
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
-      // Set defaults if everything fails
       setStats({});
       setPendingPrescriptions([]);
       setLowStockMedicines([]);
@@ -53,62 +50,11 @@ const PharmacistDashboard = () => {
     }
   };
 
-  const pharmacistModules = [
-    {
-      title: "Drug Dispensing",
-      description: "Dispense medications and process prescriptions",
-      icon: "💊",
-      link: "/pharmacist/dispensing",
-      color: "bg-blue-500",
-      badge: stats.pending_prescriptions || 0,
-      badgeLabel: "Pending",
-    },
-    {
-      title: "Stock In",
-      description: "Add purchased drugs to inventory",
-      icon: "📦",
-      link: "/pharmacist/stock-in",
-      color: "bg-green-500",
-    },
-    {
-      title: "Medicine Inventory",
-      description: "Manage medicine stock and inventory",
-      icon: "🏥",
-      link: "/medicines",
-      color: "bg-purple-500",
-      badge: stats.low_stock_medicines || 0,
-      badgeLabel: "Low Stock",
-    },
-    {
-      title: "Supplier Management",
-      description: "Manage suppliers and orders",
-      icon: "🏢",
-      link: "/suppliers",
-      color: "bg-indigo-500",
-    },
-    {
-      title: "Pharmacy Reports",
-      description: "Comprehensive pharmacy analytics and reports",
-      icon: "📊",
-      link: "/pharmacist/reports",
-      color: "bg-orange-500",
-    },
-  ];
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-            <div
-              className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-purple-600 rounded-full animate-spin mx-auto"
-              style={{
-                animationDirection: "reverse",
-                animationDuration: "1.5s",
-              }}
-            ></div>
-          </div>
+          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Loading dashboard...</p>
         </div>
       </div>
@@ -116,258 +62,276 @@ const PharmacistDashboard = () => {
   }
 
   return (
-    <div className="p-6 space-y-8 animate-fade-in">
-      {/* Header Section */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold gradient-text mb-3">
-          Pharmacist Dashboard
-        </h1>
-        <p className="text-gray-600 text-lg">
-          Medicine dispensing and inventory management
-        </p>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="dashboard-card hover-lift">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg">
-              <span className="text-3xl text-white">💊</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                Total Medicines
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header with Inline Stats */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Pharmacist Dashboard
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Manage dispensing and inventory
               </p>
-              <p className="text-3xl font-bold text-gray-900">
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-gray-600">System Online</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <p className="text-2xl font-bold text-blue-600">
                 {stats.total_medicines || 0}
               </p>
-              <p className="text-xs text-blue-600 font-medium">In inventory</p>
+              <p className="text-xs text-gray-600 mt-1">Total Medicines</p>
             </div>
-          </div>
-        </div>
-
-        <div className="dashboard-card hover-lift">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl shadow-lg">
-              <span className="text-3xl text-white">⏳</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                Pending Prescriptions
-              </p>
-              <p className="text-3xl font-bold text-gray-900">
+            <div className="text-center p-4 bg-amber-50 rounded-lg">
+              <p className="text-2xl font-bold text-amber-600">
                 {stats.pending_prescriptions || 0}
               </p>
-              <p className="text-xs text-yellow-600 font-medium">To dispense</p>
+              <p className="text-xs text-gray-600 mt-1">Pending</p>
             </div>
-          </div>
-        </div>
-
-        <div className="dashboard-card hover-lift">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl shadow-lg">
-              <span className="text-3xl text-white">⚠️</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                Low Stock Items
-              </p>
-              <p className="text-3xl font-bold text-gray-900">
+            <div className="text-center p-4 bg-red-50 rounded-lg">
+              <p className="text-2xl font-bold text-red-600">
                 {stats.low_stock_medicines || 0}
               </p>
-              <p className="text-xs text-red-600 font-medium">Need reorder</p>
+              <p className="text-xs text-gray-600 mt-1">Low Stock</p>
             </div>
-          </div>
-        </div>
-
-        <div className="dashboard-card hover-lift">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl shadow-lg">
-              <span className="text-3xl text-white">✅</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                Dispensed Today
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <p className="text-2xl font-bold text-green-600">
+                {stats.dispensed_today || 0}
               </p>
-              <p className="text-3xl font-bold text-gray-900">0</p>
-              <p className="text-xs text-green-600 font-medium">Completed</p>
+              <p className="text-xs text-gray-600 mt-1">Dispensed Today</p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-          <span className="w-1 h-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
-          Pharmacy Tools
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pharmacistModules.map((module, index) => (
-            <Link
-              key={index}
-              to={module.link}
-              className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200 transform hover:scale-105 overflow-hidden"
-            >
-              {/* Background Gradient */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${module.color.replace("bg-", "from-")} to-transparent opacity-5 group-hover:opacity-10 transition-opacity`}
-              ></div>
-
-              <div className="relative z-10">
-                <div className="flex items-start justify-between mb-4">
-                  <div
-                    className={`w-14 h-14 ${module.color} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
-                  >
-                    <span className="text-2xl text-white">{module.icon}</span>
-                  </div>
-
-                  {/* Badge for notifications */}
-                  {module.badge > 0 && (
-                    <div className="flex flex-col items-end">
-                      <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
-                        {module.badge}
-                      </span>
-                      <span className="text-xs text-gray-500 mt-1">
-                        {module.badgeLabel}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                  {module.title}
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {module.description}
-                </p>
-
-                {/* Arrow indicator */}
-                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-white text-sm font-bold">→</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Pending Prescriptions */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <span className="w-1 h-6 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
-                Pending Prescriptions
+        {/* Main Content - 2 Column Layout */}
+        <div className="grid grid-cols-3 gap-6">
+          {/* Left Sidebar - Actions */}
+          <div className="col-span-1 space-y-6">
+            {/* Primary Actions */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Quick Actions
               </h2>
-              <Link
-                to="/reports"
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold text-sm bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-all duration-200"
-              >
-                View All
-                <span>→</span>
-              </Link>
-            </div>
-          </div>
-          <div className="p-6">
-            {pendingPrescriptions.length > 0 ? (
-              <div className="space-y-4">
-                {pendingPrescriptions.slice(0, 5).map((prescription) => (
-                  <div
-                    key={prescription.id}
-                    className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100 hover:shadow-md transition-all duration-200"
-                  >
-                    <div>
-                      <p className="font-semibold text-gray-900">
-                        {prescription.prescription_number}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {prescription.patient_name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(
-                          prescription.prescription_date,
-                        ).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Link
-                      to="/reports"
-                      className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-xl text-sm hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-                    >
-                      View Details
-                    </Link>
+              <div className="space-y-3">
+                <Link
+                  to="/pharmacist/dispensing"
+                  className="flex items-center gap-3 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  <span className="text-2xl">💊</span>
+                  <div className="flex-1">
+                    <p className="font-semibold">Drug Dispensing</p>
+                    <p className="text-xs opacity-90">Process prescriptions</p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl text-gray-400">📋</span>
-                </div>
-                <p className="text-gray-500 font-medium">
-                  No pending prescriptions
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Low Stock Alerts */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-red-50">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <span className="w-1 h-6 bg-gradient-to-b from-red-600 to-orange-600 rounded-full"></span>
-                Low Stock Alerts
-              </h2>
-              <Link
-                to="/medicines"
-                className="flex items-center gap-2 text-red-600 hover:text-red-800 font-semibold text-sm bg-red-50 hover:bg-red-100 px-4 py-2 rounded-xl transition-all duration-200"
-              >
-                View All
-                <span>→</span>
-              </Link>
-            </div>
-          </div>
-          <div className="p-6">
-            {lowStockMedicines.length > 0 ? (
-              <div className="space-y-4">
-                {lowStockMedicines.slice(0, 5).map((medicine) => (
-                  <div
-                    key={medicine.id}
-                    className="flex items-center justify-between p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-100 hover:shadow-md transition-all duration-200"
-                  >
-                    <div>
-                      <p className="font-semibold text-gray-900">
-                        {medicine.name}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {medicine.strength} {medicine.unit}
-                      </p>
-                      <p className="text-xs text-red-600 font-medium">
-                        Stock: {medicine.quantity_available} (Reorder:{" "}
-                        {medicine.reorder_level})
-                      </p>
-                    </div>
-                    <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold border border-red-200">
-                      {medicine.stock_status}
+                  {stats.pending_prescriptions > 0 && (
+                    <span className="bg-white text-blue-600 text-xs font-bold px-2 py-1 rounded-full">
+                      {stats.pending_prescriptions}
                     </span>
+                  )}
+                </Link>
+
+                <Link
+                  to="/pharmacist/stock-in"
+                  className="flex items-center gap-3 p-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                >
+                  <span className="text-2xl">📦</span>
+                  <div className="flex-1">
+                    <p className="font-semibold">Stock In</p>
+                    <p className="text-xs opacity-90">Add inventory</p>
                   </div>
-                ))}
+                </Link>
+
+                <Link
+                  to="/medicines"
+                  className="flex items-center gap-3 p-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                >
+                  <span className="text-2xl">🏥</span>
+                  <div className="flex-1">
+                    <p className="font-semibold">Inventory</p>
+                    <p className="text-xs opacity-90">Manage stock</p>
+                  </div>
+                  {stats.low_stock_medicines > 0 && (
+                    <span className="bg-white text-purple-600 text-xs font-bold px-2 py-1 rounded-full">
+                      {stats.low_stock_medicines}
+                    </span>
+                  )}
+                </Link>
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl text-gray-400">✅</span>
-                </div>
-                <p className="text-gray-500 font-medium">
-                  All medicines are well stocked
-                </p>
+            </div>
+
+            {/* Secondary Actions */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                More Tools
+              </h2>
+              <div className="space-y-2">
+                <Link
+                  to="/suppliers"
+                  className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <span className="text-xl">🏢</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Suppliers
+                  </span>
+                </Link>
+                <Link
+                  to="/pharmacist/reports"
+                  className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <span className="text-xl">📊</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Reports
+                  </span>
+                </Link>
               </div>
-            )}
+            </div>
+          </div>
+
+          {/* Right Content - Data Tables */}
+          <div className="col-span-2 space-y-6">
+            {/* Pending Prescriptions Table */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-gray-900">
+                  Pending Prescriptions
+                </h2>
+                <Link
+                  to="/reports"
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  View All →
+                </Link>
+              </div>
+              <div className="overflow-x-auto">
+                {pendingPrescriptions.length > 0 ? (
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                          Prescription #
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                          Patient
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {pendingPrescriptions.slice(0, 5).map((prescription) => (
+                        <tr key={prescription.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-mono font-semibold text-gray-900">
+                              {prescription.prescription_number}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {prescription.patient_name}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500">
+                            {new Date(
+                              prescription.prescription_date,
+                            ).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <Link
+                              to="/reports"
+                              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                              Dispense
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="text-center py-12">
+                    <span className="text-4xl mb-2 block">📋</span>
+                    <p className="text-gray-500">No pending prescriptions</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Low Stock Alerts Table */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-gray-900">
+                  Low Stock Alerts
+                </h2>
+                <Link
+                  to="/medicines"
+                  className="text-sm text-red-600 hover:text-red-700 font-medium"
+                >
+                  View All →
+                </Link>
+              </div>
+              <div className="overflow-x-auto">
+                {lowStockMedicines.length > 0 ? (
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                          Medicine
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                          Strength
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                          Current
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                          Reorder
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {lowStockMedicines.slice(0, 5).map((medicine) => (
+                        <tr key={medicine.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                            {medicine.name}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {medicine.strength} {medicine.unit}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="text-sm font-bold text-red-600">
+                              {medicine.quantity_available}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center text-sm text-gray-600">
+                            {medicine.reorder_level}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                              {medicine.stock_status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="text-center py-12">
+                    <span className="text-4xl mb-2 block">✅</span>
+                    <p className="text-gray-500">All medicines well stocked</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

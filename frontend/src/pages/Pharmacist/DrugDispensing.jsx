@@ -1,32 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { prescriptionsAPI, medicinesAPI, salesAPI } from "../../services/api";
+import { medicinesAPI, salesAPI } from "../../services/api";
 import { toast } from "react-toastify";
 import {
   ArrowLeft,
   Search,
-  User,
-  Calendar,
   Pill,
   CheckCircle,
-  AlertTriangle,
-  FileText,
-  Plus,
-  Minus,
   DollarSign,
   ShoppingCart,
   Receipt,
   Trash2,
-  Edit3,
-  Eye,
-  Calculator,
   X,
 } from "lucide-react";
 
 const DrugDispensing = () => {
   const navigate = useNavigate();
-  const [prescriptions, setPrescriptions] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [availableMedicines, setAvailableMedicines] = useState([]);
   const [medicineSearchTerm, setMedicineSearchTerm] = useState("");
@@ -36,22 +25,8 @@ const DrugDispensing = () => {
   const [lastTransaction, setLastTransaction] = useState(null);
 
   useEffect(() => {
-    fetchPendingPrescriptions();
     fetchAvailableMedicines();
   }, []);
-
-  const fetchPendingPrescriptions = async () => {
-    try {
-      setLoading(true);
-      const response = await prescriptionsAPI.getAll({ status: "pending" });
-      setPrescriptions(response.data.data || []);
-    } catch (error) {
-      console.error("Failed to fetch prescriptions:", error);
-      toast.error("Failed to load prescriptions");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchAvailableMedicines = async () => {
     try {
@@ -173,16 +148,6 @@ const DrugDispensing = () => {
     }
   };
 
-  const filteredPrescriptions = prescriptions.filter(
-    (prescription) =>
-      prescription.patient_name
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      prescription.prescription_number
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()),
-  );
-
   const filteredMedicines = availableMedicines.filter(
     (medicine) =>
       medicine.name.toLowerCase().includes(medicineSearchTerm.toLowerCase()) ||
@@ -230,9 +195,9 @@ const DrugDispensing = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Medicine Search & Cart */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 gap-6">
+          {/* Medicine Search & Cart */}
+          <div className="space-y-6">
             {/* Medicine Search */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
@@ -438,121 +403,6 @@ const DrugDispensing = () => {
                     </button>
                   </>
                 )}
-              </div>
-            </div>
-          </div>
-          {/* Right Column - Prescriptions & Quick Stats */}
-          <div className="space-y-6">
-            {/* Quick Stats */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Calculator size={24} />
-                  Quick Stats
-                </h2>
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-700">
-                    Available Medicines
-                  </span>
-                  <span className="text-lg font-bold text-blue-600">
-                    {availableMedicines.length}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-700">
-                    Cart Items
-                  </span>
-                  <span className="text-lg font-bold text-green-600">
-                    {cartItems.length}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-700">
-                    Cart Total
-                  </span>
-                  <span className="text-lg font-bold text-purple-600">
-                    ${cartTotal.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Pending Prescriptions */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-orange-600 to-red-600 px-6 py-4">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <FileText size={24} />
-                  Pending Prescriptions
-                </h2>
-              </div>
-
-              <div className="p-6">
-                <div className="relative mb-4">
-                  <Search
-                    size={20}
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search prescriptions..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {loading ? (
-                    <div className="text-center py-8">
-                      <div className="w-8 h-8 border-2 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                      <p className="text-gray-500">Loading prescriptions...</p>
-                    </div>
-                  ) : filteredPrescriptions.length === 0 ? (
-                    <div className="text-center py-8">
-                      <FileText
-                        size={48}
-                        className="text-gray-300 mx-auto mb-2"
-                      />
-                      <p className="text-gray-500">No pending prescriptions</p>
-                    </div>
-                  ) : (
-                    filteredPrescriptions.map((prescription) => (
-                      <div
-                        key={prescription.id}
-                        className="border border-gray-200 rounded-xl p-4 hover:border-orange-300 hover:shadow-md transition-all duration-200 bg-gradient-to-br from-white to-orange-50"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-gray-900 flex items-center gap-2">
-                              <User size={16} />
-                              {prescription.patient_name}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {prescription.prescription_number}
-                            </p>
-                            <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                              <Calendar size={12} />
-                              {new Date(
-                                prescription.prescription_date,
-                              ).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                              Pending
-                            </span>
-                            <button className="block mt-2 text-orange-600 hover:text-orange-800 text-sm font-medium">
-                              <Eye size={16} className="inline mr-1" />
-                              View
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
               </div>
             </div>
           </div>

@@ -36,6 +36,18 @@ exports.getDashboardStats = async (req, res, next) => {
     );
     stats.todays_prescriptions = todayPrescriptions[0].count;
 
+    // Dispensed today (prescriptions dispensed today)
+    const [dispensedToday] = await db.execute(
+      'SELECT COUNT(*) as count FROM prescriptions WHERE status = "Dispensed" AND DATE(updated_at) = CURDATE()',
+    );
+    stats.dispensed_today = dispensedToday[0].count;
+
+    // Today's sales count
+    const [todaySales] = await db.execute(
+      "SELECT COUNT(*) as count FROM sales WHERE DATE(sale_date) = CURDATE()",
+    );
+    stats.todays_sales = todaySales[0].count;
+
     // This month's revenue (if invoices exist)
     const [monthlyRevenue] = await db.execute(
       `SELECT COALESCE(SUM(total_amount), 0) as revenue 
@@ -161,7 +173,7 @@ exports.getPrescriptionReport = async (req, res, next) => {
                       CONCAT(pat.first_name, ' ', pat.last_name) as patient_name,
                       CONCAT(u.first_name, ' ', u.last_name) as physician_name,
                       COUNT(pi.id) as item_count,
-                      p.dispensed_at
+                      p.updated_at as dispensed_at
                FROM prescriptions p
                LEFT JOIN patients pat ON p.patient_id = pat.id
                LEFT JOIN users u ON p.physician_id = u.id
