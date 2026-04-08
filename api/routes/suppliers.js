@@ -7,17 +7,14 @@ const validate = require("../middleware/validator");
 
 router.use(authenticate);
 
-router.get("/", supplierController.getAll);
-router.get("/:id", supplierController.getOne);
-
-// Supplier: Get own supplier information
+// Supplier: Get own supplier information (MUST be before /:id)
 router.get(
   "/me/info",
   authorize("Drug Supplier"),
   supplierController.getMySupplierInfo,
 );
 
-// Supplier: Update own bank account
+// Supplier: Update own bank account (MUST be before /:id)
 router.put(
   "/me/bank-account",
   authorize("Drug Supplier"),
@@ -33,6 +30,9 @@ router.put(
   ],
   supplierController.updateBankAccount,
 );
+
+router.get("/", supplierController.getAll);
+router.get("/:id", supplierController.getOne);
 
 router.post(
   "/",

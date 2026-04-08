@@ -246,19 +246,26 @@ CREATE TABLE stock_inventory (
 CREATE TABLE suppliers (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED,
+    created_by BIGINT UNSIGNED,
     name VARCHAR(100) NOT NULL,
     contact_person VARCHAR(100),
     email VARCHAR(100),
     phone VARCHAR(20) NOT NULL,
     address TEXT,
+    bank_name ENUM('CBE', 'Dashen Bank', 'Awash Bank') DEFAULT NULL,
+    account_number VARCHAR(50) DEFAULT NULL,
+    account_holder_name VARCHAR(100) DEFAULT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_name (name),
     INDEX idx_user_id (user_id),
-    INDEX idx_active (is_active)
+    INDEX idx_created_by (created_by),
+    INDEX idx_active (is_active),
+    INDEX idx_bank_name (bank_name)
 ) ENGINE=InnoDB COMMENT='Drug suppliers';
 
 -- Purchase Orders

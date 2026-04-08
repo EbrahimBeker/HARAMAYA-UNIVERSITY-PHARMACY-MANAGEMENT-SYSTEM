@@ -504,6 +504,83 @@ const PurchaseOrders = () => {
                 />
               </div>
 
+              {/* Supplier Bank Account Information */}
+              {formData.supplier_id &&
+                (() => {
+                  const selectedSupplier = suppliers.find(
+                    (s) => s.id === parseInt(formData.supplier_id),
+                  );
+                  if (selectedSupplier?.bank_name) {
+                    return (
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-green-600 rounded-lg">
+                            <svg
+                              className="w-5 h-5 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                              />
+                            </svg>
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                              💳 Payment Account Information
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between items-center bg-white rounded px-3 py-2">
+                                <span className="text-gray-600 font-medium">
+                                  Bank:
+                                </span>
+                                <span className="font-bold text-gray-900">
+                                  {selectedSupplier.bank_name}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center bg-white rounded px-3 py-2">
+                                <span className="text-gray-600 font-medium">
+                                  Account Number:
+                                </span>
+                                <span className="font-mono font-bold text-gray-900">
+                                  {selectedSupplier.account_number}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center bg-white rounded px-3 py-2">
+                                <span className="text-gray-600 font-medium">
+                                  Account Holder:
+                                </span>
+                                <span className="font-bold text-gray-900">
+                                  {selectedSupplier.account_holder_name}
+                                </span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-green-700 mt-2 italic">
+                              ℹ️ Use this account to send payment after order is
+                              confirmed
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else if (selectedSupplier) {
+                    return (
+                      <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                        <p className="text-sm text-yellow-800">
+                          ⚠️ This supplier has not set up their bank account
+                          yet. You may need to contact them directly for payment
+                          details.
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
               {/* Supplier Catalog */}
               {formData.supplier_id && supplierCatalog.length > 0 && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -810,6 +887,55 @@ const PurchaseOrders = () => {
 
               {/* Payment Status Section */}
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                {/* Supplier Bank Account Info */}
+                {selectedOrder.bank_name && (
+                  <div className="mb-4 pb-4 border-b border-gray-300">
+                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <svg
+                        className="w-5 h-5 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                        />
+                      </svg>
+                      Supplier Payment Account
+                    </h3>
+                    <div className="bg-white rounded-lg p-3 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Bank:</span>
+                        <span className="text-sm font-bold text-gray-900">
+                          {selectedOrder.bank_name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">
+                          Account Number:
+                        </span>
+                        <span className="text-sm font-mono font-bold text-gray-900">
+                          {selectedOrder.account_number}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">
+                          Account Holder:
+                        </span>
+                        <span className="text-sm font-bold text-gray-900">
+                          {selectedOrder.account_holder_name}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-green-700 mt-2 italic">
+                      💡 Send payment to this account and upload receipt below
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-semibold text-gray-900">
                     Payment Status

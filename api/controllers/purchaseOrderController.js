@@ -136,7 +136,7 @@ exports.getOne = async (req, res, next) => {
   try {
     const [orders] = await db.execute(
       `SELECT po.*, s.name as supplier_name, s.phone as supplier_phone,
-              s.email as supplier_email,
+              s.email as supplier_email, s.bank_name, s.account_number, s.account_holder_name,
               CONCAT(u.first_name, ' ', u.last_name) as pharmacist_name
        FROM purchase_orders po
        LEFT JOIN suppliers s ON po.supplier_id = s.id

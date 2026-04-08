@@ -662,9 +662,60 @@ const SupplierOrders = () => {
 
               {/* Items with Batch and Expiry */}
               <div>
-                <h3 className="text-lg font-semibold mb-3">
-                  Item Details (Required for Inventory Update)
-                </h3>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-lg font-semibold">
+                    Item Details (Required for Inventory Update)
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date();
+                      const twoYearsLater = new Date(
+                        today.setFullYear(today.getFullYear() + 2),
+                      );
+                      const defaultExpiry = twoYearsLater
+                        .toISOString()
+                        .split("T")[0];
+                      const batchPrefix = `BATCH-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+
+                      setDeliveryData((prev) => ({
+                        ...prev,
+                        items: prev.items.map((item, idx) => ({
+                          ...item,
+                          batch_number:
+                            item.batch_number || `${batchPrefix}-${idx + 1}`,
+                          expiry_date: item.expiry_date || defaultExpiry,
+                        })),
+                      }));
+                    }}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-2"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Auto-Fill All Items
+                  </button>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-yellow-800">
+                    💡 <strong>Tip:</strong> Click "Auto-Fill All Items" to
+                    automatically generate batch numbers and set expiry dates (2
+                    years from today). You can still edit individual items if
+                    needed.
+                  </p>
+                </div>
+
                 <div className="space-y-4">
                   {deliveryData.items.map((item, index) => (
                     <div
@@ -717,7 +768,7 @@ const SupplierOrders = () => {
                                 e.target.value,
                               )
                             }
-                            placeholder="e.g., BATCH-2024-001"
+                            placeholder="Auto-generated or enter manually"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             required
                           />
@@ -725,7 +776,7 @@ const SupplierOrders = () => {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Expiry Date (Optional)
+                            Expiry Date <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="date"
@@ -738,6 +789,7 @@ const SupplierOrders = () => {
                               )
                             }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            required
                           />
                         </div>
                       </div>
