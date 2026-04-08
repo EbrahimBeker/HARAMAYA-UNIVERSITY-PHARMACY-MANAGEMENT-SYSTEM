@@ -74,14 +74,11 @@ const PurchaseOrders = () => {
       return;
     }
 
-    console.log("Loading catalog for supplier:", supplierId);
-
     try {
       const response = await supplierCatalogAPI.getAll({
         supplier_id: supplierId,
         is_available: true,
       });
-      console.log("Catalog loaded:", response.data.data);
       setSupplierCatalog(response.data.data || []);
     } catch (error) {
       console.error("Failed to load supplier catalog:", error);
@@ -130,7 +127,6 @@ const PurchaseOrders = () => {
   };
 
   const handleSupplierChange = (supplierId) => {
-    console.log("Supplier changed to:", supplierId);
     setFormData({ ...formData, supplier_id: supplierId });
     setOrderItems([{ medicine_id: "", quantity: 1, unit_price: 0 }]);
     loadSupplierCatalog(supplierId);
@@ -145,8 +141,20 @@ const PurchaseOrders = () => {
     if (existingIndex >= 0) {
       // Update quantity
       const updated = [...orderItems];
-      updated[existingIndex].quantity +=
-        catalogItem.minimum_order_quantity || 1;
+      const newQuantity =
+        updated[existingIndex].quantity +
+        (catalogItem.minimum_order_quantity || 1);
+
+      // Check if exceeds available
+      if (newQuantity > catalogItem.quantity_available) {
+        toast.error(
+          `Cannot exceed available quantity (${catalogItem.quantity_available})`,
+        );
+        return;
+      }
+
+      updated[existingIndex].quantity = newQuantity;
+      updated[existingIndex].max_quantity = catalogItem.quantity_available;
       setOrderItems(updated);
       toast.info("Quantity updated for existing item");
     } else {
@@ -157,6 +165,8 @@ const PurchaseOrders = () => {
           medicine_id: catalogItem.medicine_id.toString(),
           quantity: catalogItem.minimum_order_quantity || 1,
           unit_price: parseFloat(catalogItem.unit_price) || 0,
+          max_quantity: catalogItem.quantity_available,
+          medicine_name: catalogItem.medicine_name,
         },
       ]);
       toast.success("Item added to order");
@@ -506,9 +516,14 @@ const PurchaseOrders = () => {
               {/* Order Items */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Order Items *
-                  </label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Order Items *
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Prices are set by supplier. You can adjust quantities.
+                    </p>
+                  </div>
                   <button
                     type="button"
                     onClick={addItem}
@@ -518,70 +533,89 @@ const PurchaseOrders = () => {
                   </button>
                 </div>
                 <div className="space-y-2">
+                  {/* Column Headers */}
+                  <div className="flex gap-2 px-1">
+                    <div className="flex-1 text-xs font-medium text-gray-600">
+                      Medicine
+                    </div>
+                    <div className="w-24 text-xs font-medium text-gray-600">
+                      Quantity
+                    </div>
+                    <div className="w-32 text-xs font-medium text-gray-600">
+                      Unit Price (ETB)
+                    </div>
+                    <div className="w-10"></div>
+                  </div>
+
                   {orderItems.map((item, index) => (
-                    <div key={index} className="flex gap-2">
-                      <select
-                        value={item.medicine_id}
-                        onChange={(e) =>
-                          updateItem(index, "medicine_id", e.target.value)
-                        }
-                        required
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select Medicine</option>
-                        {medicines.map((medicine) => (
-                          <option key={medicine.id} value={medicine.id}>
-                            {medicine.name} - {medicine.strength}{" "}
-                            {medicine.unit}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          updateItem(
-                            index,
-                            "quantity",
-                            parseInt(e.target.value),
-                          )
-                        }
-                        min="1"
-                        required
-                        placeholder="Qty"
-                        className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <input
-                        type="number"
-                        value={item.unit_price}
-                        onChange={(e) =>
-                          updateItem(
-                            index,
-                            "unit_price",
-                            parseFloat(e.target.value),
-                          )
-                        }
-                        min="0"
-                        step="0.01"
-                        required
-                        placeholder="Price"
-                        className="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      {orderItems.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeItem(index)}
-                          className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    <div key={index} className="space-y-1">
+                      <div className="flex gap-2">
+                        <select
+                          value={item.medicine_id}
+                          onChange={(e) =>
+                            updateItem(index, "medicine_id", e.target.value)
+                          }
+                          required
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                          ×
-                        </button>
+                          <option value="">Select Medicine</option>
+                          {medicines.map((medicine) => (
+                            <option key={medicine.id} value={medicine.id}>
+                              {medicine.name} - {medicine.strength}{" "}
+                              {medicine.unit}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) =>
+                              updateItem(
+                                index,
+                                "quantity",
+                                parseInt(e.target.value),
+                              )
+                            }
+                            min="1"
+                            max={item.max_quantity || undefined}
+                            required
+                            placeholder="Qty"
+                            className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <input
+                          type="number"
+                          value={item.unit_price}
+                          readOnly
+                          placeholder="Price"
+                          className="w-32 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+                        />
+                        {orderItems.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeItem(index)}
+                            className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                      {item.max_quantity && (
+                        <div className="text-xs text-gray-500 pl-1">
+                          Available: {item.max_quantity} units
+                        </div>
                       )}
                     </div>
                   ))}
                 </div>
-                <div className="mt-2 text-right">
-                  <span className="text-sm font-medium text-gray-700">
-                    Total: ${totalAmount.toFixed(2)}
+                <div className="mt-2 pt-2 border-t border-gray-200 flex justify-between items-center">
+                  <span className="text-xs text-gray-500">
+                    {orderItems.filter((item) => item.medicine_id).length}{" "}
+                    item(s)
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    Total: {totalAmount.toFixed(2)} ETB
                   </span>
                 </div>
               </div>

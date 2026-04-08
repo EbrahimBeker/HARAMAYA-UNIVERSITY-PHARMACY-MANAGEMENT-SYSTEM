@@ -9,6 +9,11 @@ const SupplierOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [confirmingOrder, setConfirmingOrder] = useState(null);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [deliveryData, setDeliveryData] = useState({
+    actual_delivery_date: new Date().toISOString().split("T")[0],
+    items: [],
+  });
 
   useEffect(() => {
     loadOrders();
@@ -61,24 +66,62 @@ const SupplierOrders = () => {
     }
   };
 
-  const handleMarkDelivered = async (orderId) => {
-    if (!window.confirm("Mark this order as delivered?")) {
+  const handleOpenDeliveryModal = async (orderId) => {
+    try {
+      const response = await purchaseOrdersAPI.getOne(orderId);
+      const order = response.data;
+
+      // Initialize delivery data with order items
+      setDeliveryData({
+        actual_delivery_date: new Date().toISOString().split("T")[0],
+        items: order.items.map((item) => ({
+          id: item.id,
+          medicine_name: item.medicine_name,
+          quantity_ordered: item.quantity_ordered,
+          quantity_received: item.quantity_ordered,
+          batch_number: "",
+          expiry_date: "",
+        })),
+      });
+
+      setSelectedOrder(order);
+      setShowDeliveryModal(true);
+      setShowDetailsModal(false);
+    } catch (error) {
+      toast.error("Failed to load order details");
+    }
+  };
+
+  const handleMarkDelivered = async () => {
+    // Validate that all items have batch numbers
+    const missingBatch = deliveryData.items.some((item) => !item.batch_number);
+    if (missingBatch) {
+      toast.error("Please provide batch numbers for all items");
       return;
     }
 
     try {
-      await purchaseOrdersAPI.updateStatus(orderId, {
-        status: "delivered",
-        actual_delivery_date: new Date().toISOString().split("T")[0],
-      });
-      toast.success("Order marked as delivered");
+      await purchaseOrdersAPI.markDelivered(selectedOrder.id, deliveryData);
+      toast.success(
+        "Order marked as delivered and inventory updated successfully",
+      );
+      setShowDeliveryModal(false);
+      setSelectedOrder(null);
       loadOrders();
-      if (selectedOrder?.id === orderId) {
-        setShowDetailsModal(false);
-      }
     } catch (error) {
-      toast.error("Failed to update order status");
+      toast.error(
+        error.response?.data?.message || "Failed to mark order as delivered",
+      );
     }
+  };
+
+  const updateDeliveryItem = (index, field, value) => {
+    setDeliveryData((prev) => ({
+      ...prev,
+      items: prev.items.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item,
+      ),
+    }));
   };
 
   const getStatusBadge = (status) => {
@@ -256,7 +299,7 @@ const SupplierOrders = () => {
                         )}
                         {order.status === "confirmed" && (
                           <button
-                            onClick={() => handleMarkDelivered(order.id)}
+                            onClick={() => handleOpenDeliveryModal(order.id)}
                             className="text-green-600 hover:text-green-800 font-medium flex items-center gap-1"
                           >
                             <CheckCircle size={16} />
@@ -418,13 +461,170 @@ const SupplierOrders = () => {
                 )}
                 {selectedOrder.status === "confirmed" && (
                   <button
-                    onClick={() => handleMarkDelivered(selectedOrder.id)}
+                    onClick={() => handleOpenDeliveryModal(selectedOrder.id)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
                   >
                     <CheckCircle size={18} />
                     Mark as Delivered
                   </button>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delivery Modal */}
+      {showDeliveryModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Mark Order as Delivered
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Order #{selectedOrder.order_number}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDeliveryModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircle size={24} />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Delivery Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Actual Delivery Date
+                </label>
+                <input
+                  type="date"
+                  value={deliveryData.actual_delivery_date}
+                  onChange={(e) =>
+                    setDeliveryData((prev) => ({
+                      ...prev,
+                      actual_delivery_date: e.target.value,
+                    }))
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Items with Batch and Expiry */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">
+                  Item Details (Required for Inventory Update)
+                </h3>
+                <div className="space-y-4">
+                  {deliveryData.items.map((item, index) => (
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <p className="font-semibold text-gray-900">
+                            {item.medicine_name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Quantity: {item.quantity_ordered} units
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Quantity Received
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max={item.quantity_ordered}
+                            value={item.quantity_received}
+                            onChange={(e) =>
+                              updateDeliveryItem(
+                                index,
+                                "quantity_received",
+                                parseInt(e.target.value) || 0,
+                              )
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Batch Number <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={item.batch_number}
+                            onChange={(e) =>
+                              updateDeliveryItem(
+                                index,
+                                "batch_number",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="e.g., BATCH-2024-001"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Expiry Date (Optional)
+                          </label>
+                          <input
+                            type="date"
+                            value={item.expiry_date}
+                            onChange={(e) =>
+                              updateDeliveryItem(
+                                index,
+                                "expiry_date",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> When you mark this order as delivered,
+                  the pharmacist's inventory will be automatically updated with
+                  the received quantities.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <button
+                  onClick={() => setShowDeliveryModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleMarkDelivered}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                >
+                  <CheckCircle size={18} />
+                  Confirm Delivery & Update Inventory
+                </button>
               </div>
             </div>
           </div>

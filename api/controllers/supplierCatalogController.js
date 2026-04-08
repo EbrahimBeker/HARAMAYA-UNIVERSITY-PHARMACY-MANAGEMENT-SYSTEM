@@ -85,11 +85,14 @@ exports.upsert = async (req, res, next) => {
     );
 
     if (existing.length > 0) {
-      // Update existing
+      // Update existing - increase quantity and update price
       await db.execute(
         `UPDATE supplier_catalog 
-         SET unit_price = ?, quantity_available = ?, minimum_order_quantity = ?,
-             is_available = ?, notes = ?
+         SET unit_price = ?, 
+             quantity_available = quantity_available + ?, 
+             minimum_order_quantity = ?,
+             is_available = ?, 
+             notes = ?
          WHERE id = ?`,
         [
           unit_price,
@@ -100,7 +103,11 @@ exports.upsert = async (req, res, next) => {
           existing[0].id,
         ],
       );
-      res.json({ message: "Catalog item updated successfully" });
+      res.json({
+        message:
+          "Catalog item updated successfully. Quantity increased by " +
+          quantity_available,
+      });
     } else {
       // Insert new
       await db.execute(
@@ -219,10 +226,14 @@ exports.bulkUpload = async (req, res, next) => {
         );
 
         if (existing.length > 0) {
+          // Update existing - increase quantity and update price
           await connection.execute(
             `UPDATE supplier_catalog 
-             SET unit_price = ?, quantity_available = ?, minimum_order_quantity = ?,
-                 is_available = 1, notes = ?
+             SET unit_price = ?, 
+                 quantity_available = quantity_available + ?, 
+                 minimum_order_quantity = ?,
+                 is_available = 1, 
+                 notes = ?
              WHERE id = ?`,
             [
               unitPrice,
@@ -329,7 +340,18 @@ exports.getStats = async (req, res, next) => {
       [supplierId],
     );
 
-    res.json(stats[0] || { totalItems: 0, availableItems: 0, totalValue: 0 });
+    const result = stats[0] || {
+      totalItems: 0,
+      availableItems: 0,
+      totalValue: 0,
+    };
+
+    // Ensure all values are numbers, not strings or null
+    res.json({
+      totalItems: parseInt(result.totalItems) || 0,
+      availableItems: parseInt(result.availableItems) || 0,
+      totalValue: parseFloat(result.totalValue) || 0,
+    });
   } catch (error) {
     next(error);
   }

@@ -233,7 +233,7 @@ exports.confirmOrder = async (req, res, next) => {
   }
 };
 
-// Supplier: Mark as delivered
+// Supplier: Mark as delivered (automatically updates pharmacist inventory)
 exports.markDelivered = async (req, res, next) => {
   const connection = await db.getConnection();
   try {
@@ -241,6 +241,19 @@ exports.markDelivered = async (req, res, next) => {
 
     const { id } = req.params;
     const { actual_delivery_date, items } = req.body;
+
+    // Get order details
+    const [orders] = await connection.execute(
+      "SELECT * FROM purchase_orders WHERE id = ?",
+      [id],
+    );
+
+    if (orders.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Purchase order not found" });
+    }
+
+    const order = orders[0];
 
     // Update order status
     await connection.execute(
@@ -250,21 +263,76 @@ exports.markDelivered = async (req, res, next) => {
       [actual_delivery_date || new Date().toISOString().split("T")[0], id],
     );
 
-    // Update received quantities
+    // Update received quantities and add to inventory
     for (const item of items) {
+      const quantityReceived = item.quantity_received || item.quantity_ordered;
+
+      // Update purchase order item
       await connection.execute(
         `UPDATE purchase_order_items 
          SET quantity_received = ?
          WHERE id = ?`,
-        [item.quantity_received, item.id],
+        [quantityReceived, item.id],
       );
+
+      // Get medicine details
+      const [orderItems] = await connection.execute(
+        "SELECT medicine_id FROM purchase_order_items WHERE id = ?",
+        [item.id],
+      );
+
+      if (orderItems.length > 0) {
+        const medicineId = orderItems[0].medicine_id;
+
+        // Update stock inventory
+        const [existingStock] = await connection.execute(
+          "SELECT * FROM stock_inventory WHERE medicine_id = ?",
+          [medicineId],
+        );
+
+        if (existingStock.length > 0) {
+          await connection.execute(
+            `UPDATE stock_inventory 
+             SET quantity_available = quantity_available + ?
+             WHERE medicine_id = ?`,
+            [quantityReceived, medicineId],
+          );
+        } else {
+          await connection.execute(
+            `INSERT INTO stock_inventory (medicine_id, quantity_available)
+             VALUES (?, ?)`,
+            [medicineId, quantityReceived],
+          );
+        }
+
+        // Record stock in transaction
+        await connection.execute(
+          `INSERT INTO stock_in (
+            medicine_id, supplier_id, quantity, batch_number,
+            expiry_date, received_by, received_date, purchase_order_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            medicineId,
+            order.supplier_id,
+            quantityReceived,
+            item.batch_number || `PO-${order.order_number}`,
+            item.expiry_date || null,
+            order.pharmacist_id,
+            actual_delivery_date || new Date().toISOString().split("T")[0],
+            id,
+          ],
+        );
+      }
     }
 
     await connection.commit();
 
-    res.json({ message: "Order marked as delivered successfully" });
+    res.json({
+      message: "Order marked as delivered and inventory updated successfully",
+    });
   } catch (error) {
     await connection.rollback();
+    console.error("Mark delivered error:", error);
     next(error);
   } finally {
     connection.release();

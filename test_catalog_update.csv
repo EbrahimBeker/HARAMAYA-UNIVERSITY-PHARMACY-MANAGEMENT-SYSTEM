@@ -1,0 +1,4 @@
+medicine_name,unit_price,quantity_available,minimum_order_quantity,notes
+Amlodipine,35.00,100,5,Bulk upload test - should increase quantity
+Amoxicillin,45.00,75,10,Another test item
+Ciprofloxacin,55.00,50,5,Third test item
