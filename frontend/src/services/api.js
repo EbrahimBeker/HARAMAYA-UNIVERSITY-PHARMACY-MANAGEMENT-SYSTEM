@@ -198,6 +198,7 @@ export const purchaseOrdersAPI = {
   getAll: (params) => api.get("/purchase-orders", { params }),
   create: (data) => api.post("/purchase-orders", data),
   getOne: (id) => api.get(`/purchase-orders/${id}`),
+  updateStatus: (id, data) => api.put(`/purchase-orders/${id}/status`, data),
   confirm: (id, data) => api.post(`/purchase-orders/${id}/confirm`, data),
   markDelivered: (id, data) => api.post(`/purchase-orders/${id}/deliver`, data),
   receiveStock: (id, data) => api.post(`/purchase-orders/${id}/receive`, data),
