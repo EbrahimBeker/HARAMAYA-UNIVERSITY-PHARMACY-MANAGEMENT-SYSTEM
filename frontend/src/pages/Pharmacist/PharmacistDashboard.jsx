@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { reportsAPI, prescriptionsAPI, inventoryAPI } from "../../services/api";
 
 const PharmacistDashboard = () => {
+  const location = useLocation();
   const [stats, setStats] = useState({});
   const [pendingPrescriptions, setPendingPrescriptions] = useState([]);
   const [lowStockMedicines, setLowStockMedicines] = useState([]);
@@ -10,7 +11,25 @@ const PharmacistDashboard = () => {
 
   useEffect(() => {
     loadDashboardData();
+
+    // Reload data when user returns to this page
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadDashboardData();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
+
+  // Reload when navigating back to dashboard
+  useEffect(() => {
+    loadDashboardData();
+  }, [location.key]);
 
   const loadDashboardData = async () => {
     try {

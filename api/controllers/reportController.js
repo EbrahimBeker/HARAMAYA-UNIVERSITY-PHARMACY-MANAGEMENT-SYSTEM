@@ -18,7 +18,7 @@ exports.getDashboardStats = async (req, res, next) => {
 
     // Pending prescriptions
     const [pendingPrescriptions] = await db.execute(
-      'SELECT COUNT(*) as count FROM prescriptions WHERE status = "Pending"',
+      'SELECT COUNT(*) as count FROM prescriptions WHERE status = "pending"',
     );
     stats.pending_prescriptions = pendingPrescriptions[0].count;
 
@@ -38,7 +38,7 @@ exports.getDashboardStats = async (req, res, next) => {
 
     // Dispensed today (prescriptions dispensed today)
     const [dispensedToday] = await db.execute(
-      'SELECT COUNT(*) as count FROM prescriptions WHERE status = "Dispensed" AND DATE(updated_at) = CURDATE()',
+      'SELECT COUNT(*) as count FROM prescriptions WHERE status = "completed" AND DATE(updated_at) = CURDATE()',
     );
     stats.dispensed_today = dispensedToday[0].count;
 
@@ -208,10 +208,10 @@ exports.getPrescriptionReport = async (req, res, next) => {
     // Calculate summary
     const totalPrescriptions = prescriptions.length;
     const pendingCount = prescriptions.filter(
-      (p) => p.status === "Pending",
+      (p) => p.status === "pending",
     ).length;
     const dispensedCount = prescriptions.filter(
-      (p) => p.status === "Dispensed",
+      (p) => p.status === "completed",
     ).length;
 
     res.json({

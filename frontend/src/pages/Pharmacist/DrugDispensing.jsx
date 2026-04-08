@@ -222,6 +222,35 @@ const DrugDispensing = () => {
 
       const saleResponse = await salesAPI.processSale(saleData);
 
+      // If this was from a prescription, mark it as dispensed
+      if (selectedPrescription) {
+        try {
+          const dispensedItems = cartItems
+            .map((item) => ({
+              prescription_item_id: selectedPrescription.items.find(
+                (pi) => pi.medicine_id === item.medicine_id,
+              )?.id,
+              quantity_dispensed: item.quantity,
+            }))
+            .filter((item) => item.prescription_item_id); // Only include items that have prescription_item_id
+
+          if (dispensedItems.length > 0) {
+            await prescriptionsAPI.dispense(selectedPrescription.id, {
+              dispensed_items: dispensedItems,
+            });
+            toast.success("Prescription marked as dispensed");
+          }
+        } catch (dispenseError) {
+          console.error(
+            "Failed to mark prescription as dispensed:",
+            dispenseError,
+          );
+          toast.warning(
+            "Sale completed but failed to update prescription status",
+          );
+        }
+      }
+
       setLastTransaction({
         ...saleData,
         transaction_id: saleResponse.data.sale.sale_number,
@@ -231,8 +260,10 @@ const DrugDispensing = () => {
       });
       setShowReceipt(true);
       setCartItems([]);
+      setSelectedPrescription(null); // Clear selected prescription
       setShowPayment(false);
 
+      fetchPendingPrescriptions(); // Reload pending prescriptions
       fetchAvailableMedicines();
       toast.success("Payment processed successfully!");
     } catch (error) {
