@@ -7,12 +7,8 @@ const validate = require("../middleware/validator");
 
 router.use(authenticate);
 
-// Get all purchase orders
-router.get(
-  "/",
-  checkPermission("manage_inventory"),
-  purchaseOrderController.getAll,
-);
+// Get all purchase orders (Pharmacist and Drug Supplier)
+router.get("/", purchaseOrderController.getAll);
 
 // Create purchase order (Pharmacist)
 router.post(
@@ -38,26 +34,26 @@ router.post(
   purchaseOrderController.create,
 );
 
-// Get single purchase order
-router.get(
-  "/:id",
-  checkPermission("manage_inventory"),
-  purchaseOrderController.getOne,
+// Get single purchase order (Pharmacist and Drug Supplier)
+router.get("/:id", purchaseOrderController.getOne);
+
+// Update order status (Pharmacist and Drug Supplier)
+router.put(
+  "/:id/status",
+  [
+    body("status")
+      .isIn(["pending", "confirmed", "delivered", "cancelled"])
+      .withMessage("Invalid status"),
+    validate,
+  ],
+  purchaseOrderController.updateStatus,
 );
 
 // Supplier: Confirm order
-router.post(
-  "/:id/confirm",
-  checkPermission("manage_inventory"),
-  purchaseOrderController.confirmOrder,
-);
+router.post("/:id/confirm", purchaseOrderController.confirmOrder);
 
 // Supplier: Mark as delivered
-router.post(
-  "/:id/deliver",
-  checkPermission("manage_inventory"),
-  purchaseOrderController.markDelivered,
-);
+router.post("/:id/deliver", purchaseOrderController.markDelivered);
 
 // Pharmacist: Receive stock
 router.post(

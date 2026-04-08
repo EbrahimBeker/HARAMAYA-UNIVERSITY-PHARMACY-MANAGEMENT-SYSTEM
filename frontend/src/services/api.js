@@ -205,4 +205,16 @@ export const purchaseOrdersAPI = {
   cancel: (id, reason) => api.post(`/purchase-orders/${id}/cancel`, { reason }),
 };
 
+// Supplier Catalog API
+export const supplierCatalogAPI = {
+  getAll: (params) => api.get("/supplier-catalog", { params }),
+  getStats: (params) => api.get("/supplier-catalog/stats", { params }),
+  upsert: (data) => api.post("/supplier-catalog", data),
+  bulkUpload: (formData) =>
+    api.post("/supplier-catalog/bulk-upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  delete: (id) => api.delete(`/supplier-catalog/${id}`),
+};
+
 export default api;

@@ -168,6 +168,33 @@ exports.getOne = async (req, res, next) => {
   }
 };
 
+// Update order status (simple status change)
+exports.updateStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status, actual_delivery_date } = req.body;
+
+    const updates = ["status = ?"];
+    const params = [status];
+
+    if (actual_delivery_date && status === "delivered") {
+      updates.push("actual_delivery_date = ?");
+      params.push(actual_delivery_date);
+    }
+
+    params.push(id);
+
+    await db.execute(
+      `UPDATE purchase_orders SET ${updates.join(", ")} WHERE id = ?`,
+      params,
+    );
+
+    res.json({ message: "Order status updated successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Supplier: Confirm order and availability
 exports.confirmOrder = async (req, res, next) => {
   const connection = await db.getConnection();

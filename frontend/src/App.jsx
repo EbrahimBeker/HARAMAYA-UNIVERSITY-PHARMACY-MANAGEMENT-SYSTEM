@@ -19,6 +19,8 @@ import DataClerkDashboard from "./pages/DataClerk/DataClerkDashboard";
 import PhysicianDashboard from "./pages/Physician/PhysicianDashboard";
 import PharmacistDashboard from "./pages/Pharmacist/PharmacistDashboard";
 import SupplierDashboard from "./pages/Supplier/SupplierDashboard";
+import SupplierOrders from "./pages/Supplier/SupplierOrders";
+import SupplierCatalog from "./pages/Supplier/SupplierCatalog";
 
 // Pharmacist specific pages
 import DrugDispensing from "./pages/Pharmacist/DrugDispensing";
@@ -276,6 +278,22 @@ function App() {
                 element={
                   <ProtectedRoute roles={["Drug Supplier"]}>
                     <SupplierDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="supplier/orders"
+                element={
+                  <ProtectedRoute roles={["Drug Supplier"]}>
+                    <SupplierOrders />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="supplier/catalog"
+                element={
+                  <ProtectedRoute roles={["Drug Supplier"]}>
+                    <SupplierCatalog />
                   </ProtectedRoute>
                 }
               />

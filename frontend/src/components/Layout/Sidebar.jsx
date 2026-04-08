@@ -102,7 +102,7 @@ const Sidebar = () => {
       ],
       "Drug Supplier": [
         { label: "Purchase Orders", icon: Package, path: "/supplier/orders" },
-        { label: "Medicines", icon: Pill, path: "/medicines" },
+        { label: "Drug Catalog", icon: Pill, path: "/supplier/catalog" },
         { label: "Reports", icon: FileText, path: "/reports" },
       ],
     };

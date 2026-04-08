@@ -1,0 +1,7 @@
+medicine_name,unit_price,quantity_available,minimum_order_quantity,notes
+Paracetamol,5.50,1000,10,Pain reliever and fever reducer
+Amoxicillin,12.00,500,5,Antibiotic for bacterial infections
+Ibuprofen,8.75,750,10,Anti-inflammatory and pain reliever
+Omeprazole,15.00,300,5,Proton pump inhibitor for acid reflux
+Amlodipine,20.00,400,5,Calcium channel blocker for hypertension
+Ciprofloxacin,18.50,250,5,Fluoroquinolone antibiotic
