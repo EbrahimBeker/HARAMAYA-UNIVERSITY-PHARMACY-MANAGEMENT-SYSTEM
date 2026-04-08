@@ -27,37 +27,6 @@ const DataClerkDashboard = () => {
     }
   };
 
-  const clerkModules = [
-    {
-      title: "Patient Registration",
-      description: "Register new patients and manage records",
-      icon: "👤",
-      link: "/clerk/patients/new",
-      color: "bg-blue-500",
-    },
-    {
-      title: "Patient Records",
-      description: "View and update patient information",
-      icon: "📋",
-      link: "/clerk/patients",
-      color: "bg-green-500",
-    },
-    {
-      title: "Billing & Invoices",
-      description: "Process payments and generate invoices",
-      icon: "💰",
-      link: "/clerk/billing",
-      color: "bg-purple-500",
-    },
-    {
-      title: "Patient Reports",
-      description: "Generate patient-related reports",
-      icon: "📊",
-      link: "/clerk/reports",
-      color: "bg-orange-500",
-    },
-  ];
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -79,214 +48,126 @@ const DataClerkDashboard = () => {
   }
 
   return (
-    <div className="p-6 space-y-8 animate-fade-in">
-      {/* Header Section */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold gradient-text mb-3">
-          Data Clerk Dashboard
-        </h1>
-        <p className="text-gray-600 text-lg">
-          Patient registration and record management
-        </p>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="dashboard-card hover-lift">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg">
-              <span className="text-3xl text-white">👥</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                Total Patients
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header with Inline Stats */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Data Clerk Dashboard
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Patient registration and record management
               </p>
-              <p className="text-3xl font-bold text-gray-900">
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-gray-600">System Online</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <p className="text-2xl font-bold text-blue-600">
                 {stats.total_patients || 0}
               </p>
-              <p className="text-xs text-green-600 font-medium">
-                +12% this month
-              </p>
+              <p className="text-xs text-gray-600 mt-1">Total Patients</p>
             </div>
-          </div>
-        </div>
-
-        <div className="dashboard-card hover-lift">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl shadow-lg">
-              <span className="text-3xl text-white">📋</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <p className="text-2xl font-bold text-green-600">0</p>
+              <p className="text-xs text-gray-600 mt-1">
                 Today's Registrations
               </p>
-              <p className="text-3xl font-bold text-gray-900">0</p>
-              <p className="text-xs text-blue-600 font-medium">
-                Ready to register
-              </p>
             </div>
-          </div>
-        </div>
-
-        <div className="dashboard-card hover-lift">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl shadow-lg">
-              <span className="text-3xl text-white">💰</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                Monthly Revenue
-              </p>
-              <p className="text-3xl font-bold text-gray-900">
+            <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <p className="text-2xl font-bold text-purple-600">
                 {stats.monthly_revenue || 0} ETB
               </p>
-              <p className="text-xs text-purple-600 font-medium">
-                +8% vs last month
-              </p>
+              <p className="text-xs text-gray-600 mt-1">Monthly Revenue</p>
+            </div>
+            <div className="text-center p-4 bg-orange-50 rounded-lg">
+              <p className="text-2xl font-bold text-orange-600">0</p>
+              <p className="text-xs text-gray-600 mt-1">Pending Invoices</p>
             </div>
           </div>
         </div>
 
-        <div className="dashboard-card hover-lift">
-          <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl shadow-lg">
-              <span className="text-3xl text-white">📊</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                Pending Invoices
-              </p>
-              <p className="text-3xl font-bold text-gray-900">0</p>
-              <p className="text-xs text-orange-600 font-medium">
-                All up to date
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-          <span className="w-1 h-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
-          Quick Actions
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {clerkModules.map((module, index) => (
-            <Link
-              key={index}
-              to={module.link}
-              className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200 transform hover:scale-105 overflow-hidden"
-            >
-              {/* Background Gradient */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${module.color.replace("bg-", "from-")} to-transparent opacity-5 group-hover:opacity-10 transition-opacity`}
-              ></div>
-
-              <div className="relative z-10">
-                <div
-                  className={`w-14 h-14 ${module.color} rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
-                >
-                  <span className="text-2xl text-white">{module.icon}</span>
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                  {module.title}
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {module.description}
-                </p>
-
-                {/* Arrow indicator */}
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">→</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Patients */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <span className="w-1 h-6 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
-              Recent Patients
-            </h2>
+        {/* Recent Patients Table */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-900">Recent Patients</h2>
             <Link
               to="/clerk/patients"
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold text-sm bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-all duration-200"
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
-              View All
-              <span>→</span>
+              View All →
             </Link>
           </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="table-modern">
-            <thead>
-              <tr>
-                <th>Patient ID</th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Registration Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentPatients.length > 0 ? (
-                recentPatients.map((patient) => (
-                  <tr
-                    key={patient.id}
-                    className="hover:bg-blue-50 transition-colors"
-                  >
-                    <td>
-                      <span className="font-mono font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
-                        {patient.patient_id}
-                      </span>
-                    </td>
-                    <td className="font-semibold text-gray-900">
-                      {patient.first_name} {patient.last_name}
-                    </td>
-                    <td className="text-gray-600">{patient.phone}</td>
-                    <td className="text-gray-500">
-                      {new Date(patient.created_at).toLocaleDateString()}
-                    </td>
-                    <td>
-                      <Link
-                        to={`/clerk/patients/${patient.id}`}
-                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-sm bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg transition-all duration-200"
-                      >
-                        View
-                      </Link>
-                    </td>
+          <div className="overflow-x-auto">
+            {recentPatients.length > 0 ? (
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                      Patient ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                      Phone
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                      Registration Date
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
+                      Actions
+                    </th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="text-center py-12">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                        <span className="text-2xl text-gray-400">👥</span>
-                      </div>
-                      <p className="text-gray-500 font-medium">
-                        No patients registered yet
-                      </p>
-                      <Link
-                        to="/clerk/patients/new"
-                        className="btn btn-primary text-sm"
-                      >
-                        Register First Patient
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {recentPatients.map((patient) => (
+                    <tr key={patient.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-mono font-semibold text-blue-600">
+                          {patient.patient_id}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                        {patient.first_name} {patient.last_name}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {patient.phone}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {new Date(patient.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Link
+                          to={`/clerk/patients/${patient.id}`}
+                          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="text-center py-12">
+                <span className="text-4xl mb-2 block">👥</span>
+                <p className="text-gray-500 mb-4">No patients registered yet</p>
+                <Link
+                  to="/clerk/patients/new"
+                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                >
+                  Register First Patient
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -82,11 +82,15 @@ const Sidebar = () => {
           icon: ClipboardList,
           path: "/clerk/patients",
         },
-        { label: "Billing", icon: DollarSign, path: "/clerk/billing" },
         { label: "Reports", icon: FileText, path: "/clerk/reports" },
       ],
       Physician: [
         { label: "Patients", icon: Users, path: "/clerk/patients" },
+        {
+          label: "Create Prescription",
+          icon: FileText,
+          path: "/physician/prescriptions/new",
+        },
         { label: "Medicines", icon: Pill, path: "/medicines" },
         { label: "Diagnoses", icon: Stethoscope, path: "/diagnoses" },
         { label: "Reports", icon: FileText, path: "/reports" },
@@ -104,9 +108,25 @@ const Sidebar = () => {
   const navigationItems = getRoleNavigation();
 
   const isActive = (path) => {
-    return (
-      location.pathname === path || location.pathname.startsWith(path + "/")
-    );
+    // Exact match for the path
+    if (location.pathname === path) return true;
+
+    // For paths with sub-routes, check if it starts with the path
+    // but exclude cases where a longer path might match a shorter one
+    // e.g., /clerk/patients/new should not match /clerk/patients
+    if (path === "/clerk/patients/new") {
+      return location.pathname === "/clerk/patients/new";
+    }
+    if (path === "/clerk/patients") {
+      return (
+        location.pathname === "/clerk/patients" ||
+        (location.pathname.startsWith("/clerk/patients/") &&
+          !location.pathname.startsWith("/clerk/patients/new"))
+      );
+    }
+
+    // Default behavior for other paths
+    return location.pathname.startsWith(path + "/");
   };
 
   return (

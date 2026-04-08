@@ -24,6 +24,9 @@ import DrugDispensing from "./pages/Pharmacist/DrugDispensing";
 import PharmacyReports from "./pages/Pharmacist/PharmacyReports";
 import StockIn from "./pages/Pharmacist/StockIn";
 
+// Physician specific pages
+import CreatePrescription from "./pages/Physician/CreatePrescription";
+
 // Data Clerk specific pages
 import PatientRegistration from "./pages/DataClerk/PatientRegistration";
 import PatientRecords from "./pages/DataClerk/PatientRecords";
@@ -139,7 +142,7 @@ function App() {
               <Route
                 path="clerk/patients"
                 element={
-                  <ProtectedRoute roles={["Data Clerk"]}>
+                  <ProtectedRoute roles={["Data Clerk", "Physician"]}>
                     <PatientRecords />
                   </ProtectedRoute>
                 }
@@ -163,7 +166,7 @@ function App() {
               <Route
                 path="clerk/patients/:id"
                 element={
-                  <ProtectedRoute roles={["Data Clerk"]}>
+                  <ProtectedRoute roles={["Data Clerk", "Physician"]}>
                     <PatientRecords />
                   </ProtectedRoute>
                 }
@@ -217,6 +220,24 @@ function App() {
                 element={
                   <ProtectedRoute roles={["Pharmacist"]}>
                     <StockIn />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Physician Routes */}
+              <Route
+                path="physician/dashboard"
+                element={
+                  <ProtectedRoute roles={["Physician"]}>
+                    <PhysicianDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="physician/prescriptions/new"
+                element={
+                  <ProtectedRoute roles={["Physician"]}>
+                    <CreatePrescription />
                   </ProtectedRoute>
                 }
               />

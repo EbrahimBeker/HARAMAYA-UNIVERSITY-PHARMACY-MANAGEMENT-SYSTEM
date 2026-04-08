@@ -79,7 +79,7 @@ const PaymentReceipt = ({ isOpen, onClose, patientData, paymentData }) => {
               <div className="flex justify-between">
                 <span className="text-gray-600">Registration Fee:</span>
                 <span className="font-medium">
-                  ${paymentData?.registration_fee?.toFixed(2)}
+                  {Number(paymentData?.registration_fee || 0).toFixed(2)} ETB
                 </span>
               </div>
               <div className="flex justify-between">
@@ -93,13 +93,13 @@ const PaymentReceipt = ({ isOpen, onClose, patientData, paymentData }) => {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Amount Paid:</span>
                     <span className="font-medium">
-                      ${paymentData?.amount_paid?.toFixed(2)}
+                      {Number(paymentData?.amount_paid || 0).toFixed(2)} ETB
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Change:</span>
                     <span className="font-medium">
-                      ${paymentData?.change_amount?.toFixed(2)}
+                      {Number(paymentData?.change_amount || 0).toFixed(2)} ETB
                     </span>
                   </div>
                 </>

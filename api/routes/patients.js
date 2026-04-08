@@ -24,7 +24,10 @@ router.post(
       .isIn(["Male", "Female", "Other"])
       .withMessage("Valid gender is required"),
     body("phone").notEmpty().withMessage("Phone number is required"),
-    body("email").optional().isEmail().withMessage("Valid email is required"),
+    body("email")
+      .optional({ checkFalsy: true })
+      .isEmail()
+      .withMessage("Valid email is required"),
     validate,
   ],
   patientController.create,

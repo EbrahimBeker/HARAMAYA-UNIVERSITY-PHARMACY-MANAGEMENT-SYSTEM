@@ -149,17 +149,8 @@ const PatientReports = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate("/clerk/dashboard")}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-          >
-            <ArrowLeft size={20} />
-            Back to Dashboard
-          </button>
-          <h1 className="text-2xl font-bold text-gray-900">Patient Reports</h1>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Patient Reports</h1>
       </div>
 
       {/* Date Range Filter */}
