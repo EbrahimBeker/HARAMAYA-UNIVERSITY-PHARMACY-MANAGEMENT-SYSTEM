@@ -10,7 +10,7 @@ router.use(authenticate);
 // Get all purchase orders
 router.get(
   "/",
-  checkPermission("view_inventory"),
+  checkPermission("manage_inventory"),
   purchaseOrderController.getAll,
 );
 
@@ -41,7 +41,7 @@ router.post(
 // Get single purchase order
 router.get(
   "/:id",
-  checkPermission("view_inventory"),
+  checkPermission("manage_inventory"),
   purchaseOrderController.getOne,
 );
 

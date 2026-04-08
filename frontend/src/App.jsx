@@ -25,6 +25,7 @@ import DrugDispensing from "./pages/Pharmacist/DrugDispensing";
 import PharmacyReports from "./pages/Pharmacist/PharmacyReports";
 import StockIn from "./pages/Pharmacist/StockIn";
 import EmergencyDispensing from "./pages/Pharmacist/EmergencyDispensing";
+import PurchaseOrders from "./pages/Pharmacist/PurchaseOrders";
 
 // Physician specific pages
 import CreatePrescription from "./pages/Physician/CreatePrescription";
@@ -234,6 +235,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="pharmacist/purchase-orders"
+                element={
+                  <ProtectedRoute roles={["Pharmacist"]}>
+                    <PurchaseOrders />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Physician Routes */}
               <Route
@@ -299,7 +308,7 @@ function App() {
               <Route
                 path="suppliers"
                 element={
-                  <ProtectedRoute roles={["Pharmacist"]}>
+                  <ProtectedRoute roles={["Admin", "Pharmacist"]}>
                     <Suppliers />
                   </ProtectedRoute>
                 }

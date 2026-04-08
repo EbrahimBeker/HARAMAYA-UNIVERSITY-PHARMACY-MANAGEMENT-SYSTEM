@@ -92,13 +92,15 @@ exports.getAll = async (req, res, next) => {
   try {
     const { status, supplier_id } = req.query;
 
-    let sql = `SELECT po.*, s.name as supplier_name,
+    let sql = `SELECT po.id, po.order_number, po.supplier_id, po.pharmacist_id,
+                      po.order_date, po.expected_delivery_date, po.actual_delivery_date,
+                      po.status, po.total_amount, po.notes, po.created_at, po.updated_at,
+                      s.name as supplier_name,
                       CONCAT(u.first_name, ' ', u.last_name) as pharmacist_name,
-                      COUNT(poi.id) as item_count
+                      (SELECT COUNT(*) FROM purchase_order_items WHERE purchase_order_id = po.id) as item_count
                FROM purchase_orders po
                LEFT JOIN suppliers s ON po.supplier_id = s.id
                LEFT JOIN users u ON po.pharmacist_id = u.id
-               LEFT JOIN purchase_order_items poi ON po.id = poi.purchase_order_id
                WHERE 1=1`;
     const params = [];
 
@@ -112,18 +114,19 @@ exports.getAll = async (req, res, next) => {
       params.push(supplier_id);
     }
 
-    // If user is supplier, only show their orders
+    // If user is a Drug Supplier, only show orders for their company
     if (req.user.roles.includes("Drug Supplier")) {
       sql += ` AND po.supplier_id IN (SELECT id FROM suppliers WHERE user_id = ?)`;
       params.push(req.user.id);
     }
 
-    sql += ` GROUP BY po.id ORDER BY po.created_at DESC`;
+    sql += ` ORDER BY po.created_at DESC`;
 
     const [orders] = await db.execute(sql, params);
 
     res.json({ data: orders });
   } catch (error) {
+    console.error("Purchase Orders getAll error:", error);
     next(error);
   }
 };

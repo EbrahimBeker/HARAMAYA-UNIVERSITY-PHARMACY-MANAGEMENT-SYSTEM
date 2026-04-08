@@ -45,7 +45,11 @@ const PurchaseOrders = () => {
 
   const loadSuppliers = async () => {
     try {
-      const response = await suppliersAPI.getAll();
+      // Fetch suppliers for ordering: Admin-created + own suppliers
+      const response = await suppliersAPI.getAll({
+        is_active: true,
+        for_ordering: true,
+      });
       setSuppliers(response.data.data || []);
     } catch (error) {
       console.error("Failed to load suppliers:", error);

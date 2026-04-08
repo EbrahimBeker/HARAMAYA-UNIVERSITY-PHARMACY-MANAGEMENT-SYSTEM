@@ -43,7 +43,7 @@ const StockIn = () => {
       setLoading(true);
       const [medicinesRes, suppliersRes, movementsRes] = await Promise.all([
         medicinesAPI.getAll({ limit: 1000 }),
-        suppliersAPI.getAll({ limit: 1000 }),
+        suppliersAPI.getAll({ limit: 1000, for_stock_in: true }),
         inventoryAPI.getMovements({ type: "in", limit: 10 }),
       ]);
 

@@ -161,22 +161,28 @@ CREATE TABLE prescriptions (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     prescription_number VARCHAR(20) UNIQUE NOT NULL,
     patient_id BIGINT UNSIGNED NOT NULL,
-    diagnosis_id BIGINT UNSIGNED,
     physician_id BIGINT UNSIGNED NOT NULL,
+    diagnosis_id BIGINT UNSIGNED,
     prescription_date DATE NOT NULL,
-    status ENUM('Pending', 'Dispensed', 'Cancelled') DEFAULT 'Pending',
+    status ENUM('pending', 'completed', 'cancelled', 'partial') DEFAULT 'pending',
     notes TEXT,
     dispensed_by BIGINT UNSIGNED,
     dispensed_at TIMESTAMP NULL,
+    refills_allowed INT DEFAULT 0,
+    refills_remaining INT DEFAULT 0,
+    original_prescription_id BIGINT UNSIGNED,
+    is_partial_dispensed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
     FOREIGN KEY (diagnosis_id) REFERENCES diagnoses(id) ON DELETE SET NULL,
     FOREIGN KEY (physician_id) REFERENCES users(id),
     FOREIGN KEY (dispensed_by) REFERENCES users(id),
+    FOREIGN KEY (original_prescription_id) REFERENCES prescriptions(id) ON DELETE SET NULL,
     INDEX idx_prescription_number (prescription_number),
     INDEX idx_patient (patient_id),
     INDEX idx_physician (physician_id),
+    INDEX idx_diagnosis (diagnosis_id),
     INDEX idx_status (status),
     INDEX idx_date (prescription_date)
 ) ENGINE=InnoDB COMMENT='Prescription headers';
@@ -191,12 +197,36 @@ CREATE TABLE prescription_items (
     frequency VARCHAR(100) NOT NULL,
     duration VARCHAR(50) NOT NULL,
     instructions TEXT,
+    quantity_remaining INT DEFAULT 0,
+    is_partial BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE CASCADE,
     FOREIGN KEY (medicine_id) REFERENCES medicines(id),
     INDEX idx_prescription (prescription_id),
     INDEX idx_medicine (medicine_id)
 ) ENGINE=InnoDB COMMENT='Prescription line items';
+
+-- Emergency Dispensing
+CREATE TABLE emergency_dispensing (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    patient_id_number VARCHAR(20),
+    patient_name VARCHAR(255),
+    medicine_id BIGINT UNSIGNED NOT NULL,
+    quantity INT NOT NULL,
+    reason TEXT NOT NULL,
+    pharmacist_id BIGINT UNSIGNED NOT NULL,
+    dispensed_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    prescription_id BIGINT UNSIGNED,
+    status ENUM('pending_prescription', 'completed') DEFAULT 'pending_prescription',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE RESTRICT,
+    FOREIGN KEY (pharmacist_id) REFERENCES users(id) ON DELETE RESTRICT,
+    FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE SET NULL,
+    INDEX idx_status (status),
+    INDEX idx_patient (patient_id_number),
+    INDEX idx_dispensed_date (dispensed_date)
+) ENGINE=InnoDB COMMENT='Emergency dispensing without prescription';
 
 -- ============================================================================
 -- 5. INVENTORY MANAGEMENT TABLES
@@ -215,6 +245,8 @@ CREATE TABLE stock_inventory (
 -- Suppliers
 CREATE TABLE suppliers (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED,
+    created_by BIGINT UNSIGNED,
     name VARCHAR(100) NOT NULL,
     contact_person VARCHAR(100),
     email VARCHAR(100),
@@ -224,30 +256,33 @@ CREATE TABLE suppliers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_name (name),
+    INDEX idx_user_id (user_id),
+    INDEX idx_created_by (created_by),
     INDEX idx_active (is_active)
 ) ENGINE=InnoDB COMMENT='Drug suppliers';
 
 -- Purchase Orders
 CREATE TABLE purchase_orders (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    order_number VARCHAR(20) UNIQUE NOT NULL,
+    order_number VARCHAR(50) UNIQUE NOT NULL,
     supplier_id BIGINT UNSIGNED NOT NULL,
+    pharmacist_id BIGINT UNSIGNED NOT NULL,
     order_date DATE NOT NULL,
-    status ENUM('Pending', 'Confirmed', 'Delivered', 'Cancelled') DEFAULT 'Pending',
-    total_amount DECIMAL(12,2),
     expected_delivery_date DATE,
     actual_delivery_date DATE,
-    created_by BIGINT UNSIGNED NOT NULL,
-    approved_by BIGINT UNSIGNED,
+    status ENUM('pending', 'confirmed', 'delivered', 'cancelled') DEFAULT 'pending',
+    total_amount DECIMAL(10,2) DEFAULT 0,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
-    FOREIGN KEY (created_by) REFERENCES users(id),
-    FOREIGN KEY (approved_by) REFERENCES users(id),
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE RESTRICT,
+    FOREIGN KEY (pharmacist_id) REFERENCES users(id) ON DELETE RESTRICT,
     INDEX idx_order_number (order_number),
     INDEX idx_supplier (supplier_id),
+    INDEX idx_pharmacist (pharmacist_id),
     INDEX idx_status (status),
     INDEX idx_order_date (order_date)
 ) ENGINE=InnoDB COMMENT='Purchase orders to suppliers';
@@ -258,11 +293,15 @@ CREATE TABLE purchase_order_items (
     purchase_order_id BIGINT UNSIGNED NOT NULL,
     medicine_id BIGINT UNSIGNED NOT NULL,
     quantity_ordered INT NOT NULL,
-    unit_cost DECIMAL(10,2) NOT NULL,
-    total_cost DECIMAL(12,2) GENERATED ALWAYS AS (quantity_ordered * unit_cost) STORED,
+    quantity_confirmed INT DEFAULT 0,
+    quantity_received INT DEFAULT 0,
+    unit_price DECIMAL(10,2) NOT NULL,
+    total_price DECIMAL(10,2) NOT NULL,
+    notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (medicine_id) REFERENCES medicines(id),
+    FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE RESTRICT,
     INDEX idx_purchase_order (purchase_order_id),
     INDEX idx_medicine (medicine_id)
 ) ENGINE=InnoDB COMMENT='Purchase order line items';
@@ -301,6 +340,7 @@ CREATE TABLE stock_out (
     quantity INT NOT NULL,
     reason ENUM('Dispensed', 'Expired', 'Damaged', 'Lost', 'Returned') NOT NULL,
     reference_id BIGINT UNSIGNED COMMENT 'prescription_id if dispensed',
+    sale_id BIGINT UNSIGNED,
     processed_by BIGINT UNSIGNED NOT NULL,
     processed_date DATE NOT NULL,
     notes TEXT,
@@ -310,6 +350,7 @@ CREATE TABLE stock_out (
     INDEX idx_medicine (medicine_id),
     INDEX idx_batch_number (batch_number),
     INDEX idx_reason (reason),
+    INDEX idx_sale_id (sale_id),
     INDEX idx_processed_date (processed_date)
 ) ENGINE=InnoDB COMMENT='Stock out records';
 
@@ -392,7 +433,51 @@ CREATE TABLE payments (
 ) ENGINE=InnoDB COMMENT='Payment transactions';
 
 -- ============================================================================
--- 7. REPORTING AND AUDIT TABLES
+-- 7. SALES MANAGEMENT TABLES
+-- ============================================================================
+
+-- Sales
+CREATE TABLE sales (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    sale_number VARCHAR(20) UNIQUE NOT NULL,
+    customer_name VARCHAR(255),
+    customer_phone VARCHAR(20),
+    customer_address TEXT,
+    payment_method ENUM('cash', 'card', 'mobile_money', 'bank_transfer') NOT NULL,
+    amount_paid DECIMAL(10,2) NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    change_amount DECIMAL(10,2) DEFAULT 0,
+    processed_by BIGINT UNSIGNED NOT NULL,
+    sale_date DATETIME NOT NULL,
+    status ENUM('pending', 'completed', 'cancelled') DEFAULT 'completed',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (processed_by) REFERENCES users(id),
+    INDEX idx_sale_number (sale_number),
+    INDEX idx_sale_date (sale_date),
+    INDEX idx_processed_by (processed_by),
+    INDEX idx_status (status)
+) ENGINE=InnoDB COMMENT='Sales transactions';
+
+-- Sale Items
+CREATE TABLE sale_items (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    sale_id BIGINT UNSIGNED NOT NULL,
+    medicine_id BIGINT UNSIGNED NOT NULL,
+    medicine_name VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    total_price DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
+    FOREIGN KEY (medicine_id) REFERENCES medicines(id),
+    INDEX idx_sale (sale_id),
+    INDEX idx_medicine (medicine_id)
+) ENGINE=InnoDB COMMENT='Sale line items';
+
+-- ============================================================================
+-- 8. REPORTING AND AUDIT TABLES
 -- ============================================================================
 
 -- Reports
@@ -428,7 +513,7 @@ CREATE TABLE audit_log (
 ) ENGINE=InnoDB COMMENT='System audit trail';
 
 -- ============================================================================
--- 8. INSERT DEFAULT DATA
+-- 9. INSERT DEFAULT DATA
 -- ============================================================================
 
 -- Insert Roles
@@ -436,11 +521,8 @@ INSERT INTO roles (name) VALUES
 ('Administrator'),
 ('Physician'),
 ('Pharmacist'),
-('Receptionist'),
-('Inventory Manager'),
-('Supplier'),
-('Patient'),
-('Cashier');
+('Data Clerk'),
+('Drug Supplier');
 
 -- Insert Medicine Categories
 INSERT INTO medicine_categories (name) VALUES
@@ -463,7 +545,7 @@ INSERT INTO medicine_types (name) VALUES
 ('Inhaler');
 
 -- ============================================================================
--- 9. VIEWS FOR COMMON QUERIES
+-- 10. VIEWS FOR COMMON QUERIES
 -- ============================================================================
 
 -- View: Current Stock with Medicine Details
@@ -502,7 +584,7 @@ FROM prescriptions p
 JOIN patients pat ON p.patient_id = pat.id
 JOIN users u ON p.physician_id = u.id
 LEFT JOIN prescription_items pi ON p.id = pi.prescription_id
-WHERE p.status = 'Pending'
+WHERE p.status = 'pending'
 GROUP BY p.id;
 
 -- View: Expiring Medicines

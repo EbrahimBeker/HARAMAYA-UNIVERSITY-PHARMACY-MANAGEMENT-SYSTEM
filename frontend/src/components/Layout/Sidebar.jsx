@@ -67,8 +67,13 @@ const Sidebar = () => {
           path: "/pharmacist/dispensing",
         },
         { label: "Stock In", icon: Package, path: "/pharmacist/stock-in" },
+        {
+          label: "Purchase Orders",
+          icon: Truck,
+          path: "/pharmacist/purchase-orders",
+        },
         { label: "Inventory", icon: Pill, path: "/medicines" },
-        { label: "Suppliers", icon: Truck, path: "/suppliers" },
+        { label: "Suppliers", icon: Package, path: "/suppliers" },
         { label: "Reports", icon: BarChart3, path: "/pharmacist/reports" },
       ],
       "Data Clerk": [
@@ -96,7 +101,7 @@ const Sidebar = () => {
         { label: "Reports", icon: FileText, path: "/reports" },
       ],
       "Drug Supplier": [
-        { label: "Suppliers", icon: Package, path: "/suppliers" },
+        { label: "Purchase Orders", icon: Package, path: "/supplier/orders" },
         { label: "Medicines", icon: Pill, path: "/medicines" },
         { label: "Reports", icon: FileText, path: "/reports" },
       ],

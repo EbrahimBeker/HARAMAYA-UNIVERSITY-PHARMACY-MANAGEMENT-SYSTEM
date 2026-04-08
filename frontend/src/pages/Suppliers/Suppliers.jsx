@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { suppliersAPI } from "../../services/api";
+import { suppliersAPI, usersAPI } from "../../services/api";
 import { toast } from "react-toastify";
 import {
   Plus,
@@ -17,6 +17,7 @@ import { useAuth } from "../../context/AuthContext";
 
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
@@ -29,11 +30,13 @@ const Suppliers = () => {
     email: "",
     phone: "",
     address: "",
+    user_id: "",
     is_active: true,
   });
 
   useEffect(() => {
     fetchSuppliers();
+    fetchDrugSupplierUsers();
   }, []);
 
   const fetchSuppliers = async () => {
@@ -44,6 +47,15 @@ const Suppliers = () => {
       toast.error("Failed to fetch suppliers");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDrugSupplierUsers = async () => {
+    try {
+      const response = await usersAPI.getAll({ role: "Drug Supplier" });
+      setUsers(response.data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch drug supplier users:", error);
     }
   };
 
@@ -85,6 +97,7 @@ const Suppliers = () => {
         email: supplier.email || "",
         phone: supplier.phone,
         address: supplier.address || "",
+        user_id: supplier.user_id || "",
         is_active: supplier.is_active,
       });
     } else {
@@ -95,6 +108,7 @@ const Suppliers = () => {
         email: "",
         phone: "",
         address: "",
+        user_id: "",
         is_active: true,
       });
     }
@@ -118,6 +132,7 @@ const Suppliers = () => {
   );
 
   const canEdit = hasAnyRole(["Admin", "Pharmacist"]);
+  const isAdmin = hasAnyRole(["Admin"]);
 
   if (loading) return <Loading />;
 
@@ -166,11 +181,16 @@ const Suppliers = () => {
                 <h3 className="text-lg font-semibold text-gray-900">
                   {supplier.name}
                 </h3>
-                <span
-                  className={`badge ${supplier.is_active ? "badge-success" : "badge-danger"}`}
-                >
-                  {supplier.is_active ? "Active" : "Inactive"}
-                </span>
+                <div className="flex flex-col gap-1 items-end">
+                  <span
+                    className={`badge ${supplier.is_active ? "badge-success" : "badge-danger"}`}
+                  >
+                    {supplier.is_active ? "Active" : "Inactive"}
+                  </span>
+                  {supplier.user_id && (
+                    <span className="badge badge-info text-xs">Has Login</span>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-3 mb-4">
@@ -300,6 +320,32 @@ const Suppliers = () => {
               placeholder="Street address, City, Region"
             />
           </div>
+
+          {isAdmin && (
+            <div>
+              <label className="form-label">
+                Link to User Account (Optional)
+              </label>
+              <select
+                className="form-input"
+                value={formData.user_id}
+                onChange={(e) =>
+                  setFormData({ ...formData, user_id: e.target.value })
+                }
+              >
+                <option value="">-- No User Account --</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.first_name} {user.last_name} ({user.username})
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Link this supplier to a Drug Supplier user account to allow them
+                to view and confirm orders
+              </p>
+            </div>
+          )}
 
           <div>
             <label className="flex items-center gap-2 cursor-pointer">
