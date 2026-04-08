@@ -3,14 +3,17 @@ import {
   purchaseOrdersAPI,
   suppliersAPI,
   medicinesAPI,
+  supplierCatalogAPI,
 } from "../../services/api";
 import { toast } from "react-toastify";
-import { Plus, Package, Eye } from "lucide-react";
+import { Plus, Package, Eye, Search, Info } from "lucide-react";
 
 const PurchaseOrders = () => {
   const [orders, setOrders] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [medicines, setMedicines] = useState([]);
+  const [supplierCatalog, setSupplierCatalog] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -65,6 +68,28 @@ const PurchaseOrders = () => {
     }
   };
 
+  const loadSupplierCatalog = async (supplierId) => {
+    if (!supplierId) {
+      setSupplierCatalog([]);
+      return;
+    }
+
+    console.log("Loading catalog for supplier:", supplierId);
+
+    try {
+      const response = await supplierCatalogAPI.getAll({
+        supplier_id: supplierId,
+        is_available: true,
+      });
+      console.log("Catalog loaded:", response.data.data);
+      setSupplierCatalog(response.data.data || []);
+    } catch (error) {
+      console.error("Failed to load supplier catalog:", error);
+      toast.error("Failed to load supplier catalog");
+      setSupplierCatalog([]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -100,6 +125,42 @@ const PurchaseOrders = () => {
       notes: "",
     });
     setOrderItems([{ medicine_id: "", quantity: 1, unit_price: 0 }]);
+    setSupplierCatalog([]);
+    setSearchTerm("");
+  };
+
+  const handleSupplierChange = (supplierId) => {
+    console.log("Supplier changed to:", supplierId);
+    setFormData({ ...formData, supplier_id: supplierId });
+    setOrderItems([{ medicine_id: "", quantity: 1, unit_price: 0 }]);
+    loadSupplierCatalog(supplierId);
+  };
+
+  const addItemFromCatalog = (catalogItem) => {
+    // Check if item already exists
+    const existingIndex = orderItems.findIndex(
+      (item) => item.medicine_id === catalogItem.medicine_id.toString(),
+    );
+
+    if (existingIndex >= 0) {
+      // Update quantity
+      const updated = [...orderItems];
+      updated[existingIndex].quantity +=
+        catalogItem.minimum_order_quantity || 1;
+      setOrderItems(updated);
+      toast.info("Quantity updated for existing item");
+    } else {
+      // Add new item
+      setOrderItems([
+        ...orderItems.filter((item) => item.medicine_id !== ""),
+        {
+          medicine_id: catalogItem.medicine_id.toString(),
+          quantity: catalogItem.minimum_order_quantity || 1,
+          unit_price: parseFloat(catalogItem.unit_price) || 0,
+        },
+      ]);
+      toast.success("Item added to order");
+    }
   };
 
   const addItem = () => {
@@ -291,9 +352,7 @@ const PurchaseOrders = () => {
                   </label>
                   <select
                     value={formData.supplier_id}
-                    onChange={(e) =>
-                      setFormData({ ...formData, supplier_id: e.target.value })
-                    }
+                    onChange={(e) => handleSupplierChange(e.target.value)}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -337,6 +396,112 @@ const PurchaseOrders = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
+              {/* Supplier Catalog */}
+              {formData.supplier_id && supplierCatalog.length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                      <Package size={16} className="text-blue-600" />
+                      Available from Supplier ({supplierCatalog.length} items)
+                    </h3>
+                    <div className="relative">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Search medicines..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9 pr-3 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto space-y-2">
+                    {supplierCatalog
+                      .filter(
+                        (item) =>
+                          !searchTerm ||
+                          item.medicine_name
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()) ||
+                          item.generic_name
+                            ?.toLowerCase()
+                            .includes(searchTerm.toLowerCase()),
+                      )
+                      .map((item) => (
+                        <div
+                          key={item.id}
+                          className="bg-white rounded-lg p-3 border border-gray-200 hover:border-blue-300 transition-colors"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900 text-sm">
+                                {item.medicine_name}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {item.generic_name}{" "}
+                                {item.strength && `- ${item.strength}`}
+                              </div>
+                              <div className="flex items-center gap-4 mt-2 text-xs">
+                                <span className="text-gray-600">
+                                  <span className="font-medium">Price:</span>{" "}
+                                  {(parseFloat(item.unit_price) || 0).toFixed(
+                                    2,
+                                  )}{" "}
+                                  ETB
+                                </span>
+                                <span className="text-gray-600">
+                                  <span className="font-medium">
+                                    Available:
+                                  </span>{" "}
+                                  {item.quantity_available}
+                                </span>
+                                <span className="text-gray-600">
+                                  <span className="font-medium">
+                                    Min Order:
+                                  </span>{" "}
+                                  {item.minimum_order_quantity}
+                                </span>
+                              </div>
+                              {item.notes && (
+                                <div className="mt-2 text-xs text-gray-500 italic flex items-start gap-1">
+                                  <Info
+                                    size={12}
+                                    className="mt-0.5 flex-shrink-0"
+                                  />
+                                  {item.notes}
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => addItemFromCatalog(item)}
+                              className="ml-3 px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {formData.supplier_id && supplierCatalog.length === 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                  <Package size={32} className="mx-auto text-yellow-500 mb-2" />
+                  <p className="text-sm text-yellow-800 font-medium">
+                    No catalog available from this supplier
+                  </p>
+                  <p className="text-xs text-yellow-600 mt-1">
+                    You can still add items manually below
+                  </p>
+                </div>
+              )}
 
               {/* Order Items */}
               <div>
