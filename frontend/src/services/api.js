@@ -78,6 +78,15 @@ export const prescriptionsAPI = {
   getOne: (id) => api.get(`/prescriptions/${id}`),
   dispense: (id, data) => api.post(`/prescriptions/${id}/dispense`, data),
   getPending: () => api.get("/prescriptions/status/pending"),
+  // Feature 1: Patient History
+  getPatientHistory: (patientId) =>
+    api.get(`/prescriptions/patient/${patientId}/history`),
+  // Feature 2: Refill Prescription
+  refill: (id) => api.post(`/prescriptions/${id}/refill`),
+  // Feature 3: Partial Dispensing
+  dispensePartial: (id, data) =>
+    api.post(`/prescriptions/${id}/dispense-partial`, data),
+  getPartial: () => api.get("/prescriptions/status/partial"),
 };
 
 // Diagnoses API
@@ -170,6 +179,18 @@ export const salesAPI = {
   processSale: (data) => api.post("/sales", data),
   getAll: (params) => api.get("/sales", { params }),
   getOne: (id) => api.get(`/sales/${id}`),
+};
+
+// Feature 4: Emergency Dispensing API
+export const emergencyDispensingAPI = {
+  create: (data) => api.post("/emergency-dispensing", data),
+  getAll: (params) => api.get("/emergency-dispensing", { params }),
+  getPending: () => api.get("/emergency-dispensing/pending"),
+  getOne: (id) => api.get(`/emergency-dispensing/${id}`),
+  linkPrescription: (id, prescriptionId) =>
+    api.put(`/emergency-dispensing/${id}/link`, {
+      prescription_id: prescriptionId,
+    }),
 };
 
 export default api;

@@ -86,6 +86,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = (updatedUserData) => {
+    const newUser = { ...user, ...updatedUserData };
+    setUser(newUser);
+    localStorage.setItem(userKey, JSON.stringify(newUser));
+  };
+
   const value = {
     user,
     loading,
@@ -96,6 +102,7 @@ export const AuthProvider = ({ children }) => {
     hasPermission,
     hasAnyPermission,
     getDashboardRoute,
+    updateUser,
     isAuthenticated: !!user,
   };
 

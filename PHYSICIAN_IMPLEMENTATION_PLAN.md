@@ -1,20 +1,17 @@
 # Physician Prescription System - Implementation Plan
 
 ## Current Status
-
 The Physician Dashboard exists but lacks the core prescription creation functionality described in the workflow guide.
 
 ## Required Features
 
 ### 1. Patient Search & Selection
-
 - Search patients by ID, name, or phone
 - View patient details
 - Access patient medical history
 - View previous prescriptions
 
 ### 2. Prescription Creation Page
-
 - Patient information display
 - Diagnosis section (with ICD codes)
 - Medicine selection interface
@@ -25,7 +22,6 @@ The Physician Dashboard exists but lacks the core prescription creation function
 - Allergy checks
 
 ### 3. Prescription Management
-
 - Save prescriptions
 - Print prescriptions
 - View prescription history
@@ -35,7 +31,6 @@ The Physician Dashboard exists but lacks the core prescription creation function
 ## Implementation Steps
 
 ### Phase 1: Backend API (Required First)
-
 1. Create prescription endpoints
 2. Create diagnosis endpoints
 3. Add prescription-medicine relationship
@@ -43,7 +38,6 @@ The Physician Dashboard exists but lacks the core prescription creation function
 5. Add drug interaction checks
 
 ### Phase 2: Frontend Pages
-
 1. Patient search page
 2. Patient details page
 3. Prescription creation form
@@ -51,7 +45,6 @@ The Physician Dashboard exists but lacks the core prescription creation function
 5. Prescription print template
 
 ### Phase 3: Integration
-
 1. Connect to backend APIs
 2. Add form validation
 3. Implement print functionality
@@ -61,14 +54,12 @@ The Physician Dashboard exists but lacks the core prescription creation function
 ## Files to Create/Modify
 
 ### Backend Files:
-
 - `api/controllers/prescriptionController.js` (may exist, needs review)
 - `api/controllers/diagnosisController.js` (may exist, needs review)
 - `api/routes/prescriptions.js` (may exist, needs review)
 - `api/routes/diagnoses.js` (may exist, needs review)
 
 ### Frontend Files:
-
 - `frontend/src/pages/Physician/PatientSearch.jsx` (NEW)
 - `frontend/src/pages/Physician/PatientDetails.jsx` (NEW)
 - `frontend/src/pages/Physician/CreatePrescription.jsx` (NEW)
@@ -77,9 +68,7 @@ The Physician Dashboard exists but lacks the core prescription creation function
 - `frontend/src/components/Physician/MedicineSelector.jsx` (NEW)
 
 ## Estimated Complexity
-
 This is a MAJOR feature requiring:
-
 - 6-8 new frontend pages/components
 - Backend API endpoints (if not existing)
 - Database schema verification
@@ -87,16 +76,13 @@ This is a MAJOR feature requiring:
 - 4-6 hours of development time
 
 ## Recommendation
-
 Before implementing, we should:
-
 1. Check if prescription APIs already exist in the backend
 2. Verify database schema supports this workflow
 3. Confirm all required tables exist
 4. Test existing endpoints
 
 ## Next Steps
-
 Would you like me to:
 A. Check existing backend APIs and database schema first?
 B. Start implementing the frontend pages assuming APIs exist?

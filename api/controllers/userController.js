@@ -1,5 +1,5 @@
-const bcrypt = require('bcryptjs');
-const db = require('../config/database');
+const bcrypt = require("bcryptjs");
+const db = require("../config/database");
 
 exports.getAll = async (req, res, next) => {
   try {
@@ -31,10 +31,10 @@ exports.getAll = async (req, res, next) => {
     const [users] = await db.execute(sql, params);
 
     res.json({
-      data: users.map(u => ({
+      data: users.map((u) => ({
         ...u,
-        roles: u.roles ? u.roles.split(',') : []
-      }))
+        roles: u.roles ? u.roles.split(",") : [],
+      })),
     });
   } catch (error) {
     next(error);
@@ -46,13 +46,21 @@ exports.create = async (req, res, next) => {
   try {
     await connection.beginTransaction();
 
-    const { username, email, password, first_name, last_name, phone, role_ids } = req.body;
+    const {
+      username,
+      email,
+      password,
+      first_name,
+      last_name,
+      phone,
+      role_ids,
+    } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const [result] = await connection.execute(
       `INSERT INTO users (username, email, password, first_name, last_name, phone, is_active)
        VALUES (?, ?, ?, ?, ?, ?, 1)`,
-      [username, email, hashedPassword, first_name, last_name, phone || null]
+      [username, email, hashedPassword, first_name, last_name, phone || null],
     );
 
     const userId = result.insertId;
@@ -60,8 +68,8 @@ exports.create = async (req, res, next) => {
     if (role_ids && role_ids.length > 0) {
       for (const roleId of role_ids) {
         await connection.execute(
-          'INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)',
-          [userId, roleId]
+          "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)",
+          [userId, roleId],
         );
       }
     }
@@ -75,18 +83,18 @@ exports.create = async (req, res, next) => {
        LEFT JOIN roles r ON ur.role_id = r.id
        WHERE u.id = ?
        GROUP BY u.id`,
-      [userId]
+      [userId],
     );
 
     const user = users[0];
     delete user.password;
 
     res.status(201).json({
-      message: 'User created successfully',
+      message: "User created successfully",
       user: {
         ...user,
-        roles: user.roles ? user.roles.split(',') : []
-      }
+        roles: user.roles ? user.roles.split(",") : [],
+      },
     });
   } catch (error) {
     await connection.rollback();
@@ -105,11 +113,11 @@ exports.getOne = async (req, res, next) => {
        LEFT JOIN roles r ON ur.role_id = r.id
        WHERE u.id = ? AND u.deleted_at IS NULL
        GROUP BY u.id`,
-      [req.params.id]
+      [req.params.id],
     );
 
     if (users.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const user = users[0];
@@ -117,8 +125,8 @@ exports.getOne = async (req, res, next) => {
 
     res.json({
       ...user,
-      roles: user.roles ? user.roles.split(',') : [],
-      role_ids: user.role_ids ? user.role_ids.split(',').map(Number) : []
+      roles: user.roles ? user.roles.split(",") : [],
+      role_ids: user.role_ids ? user.role_ids.split(",").map(Number) : [],
     });
   } catch (error) {
     next(error);
@@ -131,55 +139,89 @@ exports.update = async (req, res, next) => {
     await connection.beginTransaction();
 
     const { id } = req.params;
-    const { username, email, password, first_name, last_name, phone, is_active, role_ids } = req.body;
+    const {
+      username,
+      email,
+      password,
+      current_password,
+      first_name,
+      last_name,
+      phone,
+      is_active,
+      role_ids,
+    } = req.body;
+
+    // If updating password, verify current password
+    if (password && current_password) {
+      const [users] = await connection.execute(
+        "SELECT password FROM users WHERE id = ?",
+        [id],
+      );
+
+      if (users.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const isValidPassword = await bcrypt.compare(
+        current_password,
+        users[0].password,
+      );
+      if (!isValidPassword) {
+        return res
+          .status(401)
+          .json({ message: "Current password is incorrect" });
+      }
+    }
 
     const updates = [];
     const params = [];
 
     if (username) {
-      updates.push('username = ?');
+      updates.push("username = ?");
       params.push(username);
     }
     if (email) {
-      updates.push('email = ?');
+      updates.push("email = ?");
       params.push(email);
     }
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      updates.push('password = ?');
+      updates.push("password = ?");
       params.push(hashedPassword);
     }
     if (first_name) {
-      updates.push('first_name = ?');
+      updates.push("first_name = ?");
       params.push(first_name);
     }
     if (last_name) {
-      updates.push('last_name = ?');
+      updates.push("last_name = ?");
       params.push(last_name);
     }
     if (phone !== undefined) {
-      updates.push('phone = ?');
+      updates.push("phone = ?");
       params.push(phone);
     }
     if (is_active !== undefined) {
-      updates.push('is_active = ?');
+      updates.push("is_active = ?");
       params.push(is_active ? 1 : 0);
     }
 
     if (updates.length > 0) {
       params.push(id);
       await connection.execute(
-        `UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-        params
+        `UPDATE users SET ${updates.join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+        params,
       );
     }
 
     if (role_ids) {
-      await connection.execute('DELETE FROM user_roles WHERE user_id = ?', [id]);
+      await connection.execute("DELETE FROM user_roles WHERE user_id = ?", [
+        id,
+      ]);
       for (const roleId of role_ids) {
         await connection.execute(
-          'INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)',
-          [id, roleId]
+          "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)",
+          [id, roleId],
         );
       }
     }
@@ -193,18 +235,18 @@ exports.update = async (req, res, next) => {
        LEFT JOIN roles r ON ur.role_id = r.id
        WHERE u.id = ?
        GROUP BY u.id`,
-      [id]
+      [id],
     );
 
     const user = users[0];
     delete user.password;
 
     res.json({
-      message: 'User updated successfully',
+      message: "User updated successfully",
       user: {
         ...user,
-        roles: user.roles ? user.roles.split(',') : []
-      }
+        roles: user.roles ? user.roles.split(",") : [],
+      },
     });
   } catch (error) {
     await connection.rollback();
@@ -219,15 +261,17 @@ exports.delete = async (req, res, next) => {
     const { id } = req.params;
 
     if (parseInt(id) === req.user.id) {
-      return res.status(403).json({ message: 'Cannot delete your own account' });
+      return res
+        .status(403)
+        .json({ message: "Cannot delete your own account" });
     }
 
     await db.execute(
-      'UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [id]
+      "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [id],
     );
 
-    res.json({ message: 'User deleted successfully' });
+    res.json({ message: "User deleted successfully" });
   } catch (error) {
     next(error);
   }

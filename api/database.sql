@@ -78,6 +78,7 @@ CREATE TABLE medicines (
     generic_name VARCHAR(200),
     category_id BIGINT UNSIGNED NOT NULL,
     type_id BIGINT UNSIGNED NOT NULL,
+    form VARCHAR(50),
     strength VARCHAR(50),
     unit VARCHAR(20) NOT NULL,
     reorder_level INT DEFAULT 10,
@@ -99,6 +100,50 @@ CREATE TABLE stock_inventory (
     quantity_available INT DEFAULT 0,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Patients Table
+CREATE TABLE patients (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    patient_id VARCHAR(20) UNIQUE NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    date_of_birth DATE NOT NULL,
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(100),
+    address TEXT,
+    emergency_contact_name VARCHAR(100),
+    emergency_contact_phone VARCHAR(20),
+    blood_group VARCHAR(5),
+    allergies TEXT,
+    registered_by BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (registered_by) REFERENCES users(id),
+    INDEX idx_patient_id (patient_id),
+    INDEX idx_name (last_name, first_name),
+    INDEX idx_phone (phone)
+) ENGINE=InnoDB;
+
+-- Diagnoses Table
+CREATE TABLE diagnoses (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    patient_id BIGINT UNSIGNED NOT NULL,
+    physician_id BIGINT UNSIGNED NOT NULL,
+    diagnosis_date DATE NOT NULL,
+    symptoms TEXT NOT NULL,
+    vital_signs JSON,
+    diagnosis TEXT NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
+    FOREIGN KEY (physician_id) REFERENCES users(id),
+    INDEX idx_patient (patient_id),
+    INDEX idx_physician (physician_id),
+    INDEX idx_date (diagnosis_date)
 ) ENGINE=InnoDB;
 
 -- Stock In

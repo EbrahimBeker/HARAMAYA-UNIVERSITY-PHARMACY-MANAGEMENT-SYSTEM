@@ -177,9 +177,15 @@ const Navbar = () => {
                     </div>
                   </div>
 
-                  <button className="w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors">
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      navigate("/profile");
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
                     <Settings size={16} />
-                    <span className="text-sm">Settings</span>
+                    <span className="text-sm">Profile Settings</span>
                   </button>
 
                   <button

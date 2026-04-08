@@ -147,6 +147,19 @@ const PharmacistDashboard = () => {
                 </Link>
 
                 <Link
+                  to="/pharmacist/emergency-dispensing"
+                  className="flex items-center gap-3 p-4 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                >
+                  <span className="text-2xl">⚠️</span>
+                  <div className="flex-1">
+                    <p className="font-semibold">Emergency Dispensing</p>
+                    <p className="text-xs opacity-90">
+                      No prescription required
+                    </p>
+                  </div>
+                </Link>
+
+                <Link
                   to="/medicines"
                   className="flex items-center gap-3 p-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
                 >

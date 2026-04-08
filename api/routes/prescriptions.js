@@ -35,6 +35,10 @@ router.post(
     body("items.*.dosage").notEmpty().withMessage("Dosage is required"),
     body("items.*.frequency").notEmpty().withMessage("Frequency is required"),
     body("items.*.duration").notEmpty().withMessage("Duration is required"),
+    body("diagnosis_id")
+      .optional()
+      .isInt()
+      .withMessage("Valid diagnosis ID required if provided"),
     validate,
   ],
   prescriptionController.create,
@@ -65,6 +69,40 @@ router.get(
   "/status/pending",
   checkPermission("view_prescriptions"),
   prescriptionController.getPendingPrescriptions,
+);
+
+// Get partial prescriptions (Pharmacist)
+router.get(
+  "/status/partial",
+  checkPermission("view_prescriptions"),
+  prescriptionController.getPartialPrescriptions,
+);
+
+// Get patient prescription history (Feature 1)
+router.get(
+  "/patient/:patient_id/history",
+  checkPermission("view_prescriptions"),
+  prescriptionController.getPatientHistory,
+);
+
+// Refill prescription (Feature 2)
+router.post(
+  "/:id/refill",
+  checkPermission("dispense_medicines"),
+  prescriptionController.refillPrescription,
+);
+
+// Partial dispensing (Feature 3)
+router.post(
+  "/:id/dispense-partial",
+  [
+    checkPermission("dispense_medicines"),
+    body("dispensed_items")
+      .isArray()
+      .withMessage("Dispensed items array is required"),
+    validate,
+  ],
+  prescriptionController.dispensePartial,
 );
 
 module.exports = router;

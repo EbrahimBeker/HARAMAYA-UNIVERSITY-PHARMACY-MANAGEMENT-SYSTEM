@@ -11,6 +11,7 @@ import Medicines from "./pages/Medicines/Medicines";
 import Users from "./pages/Users/Users";
 import Suppliers from "./pages/Suppliers/Suppliers";
 import Reports from "./pages/Reports/Reports";
+import UserProfile from "./pages/Settings/UserProfile";
 
 // Role-based dashboards
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -23,9 +24,11 @@ import SupplierDashboard from "./pages/Supplier/SupplierDashboard";
 import DrugDispensing from "./pages/Pharmacist/DrugDispensing";
 import PharmacyReports from "./pages/Pharmacist/PharmacyReports";
 import StockIn from "./pages/Pharmacist/StockIn";
+import EmergencyDispensing from "./pages/Pharmacist/EmergencyDispensing";
 
 // Physician specific pages
 import CreatePrescription from "./pages/Physician/CreatePrescription";
+import Diagnoses from "./pages/Physician/Diagnoses";
 
 // Data Clerk specific pages
 import PatientRegistration from "./pages/DataClerk/PatientRegistration";
@@ -223,6 +226,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="pharmacist/emergency-dispensing"
+                element={
+                  <ProtectedRoute roles={["Pharmacist"]}>
+                    <EmergencyDispensing />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Physician Routes */}
               <Route
@@ -238,6 +249,14 @@ function App() {
                 element={
                   <ProtectedRoute roles={["Physician"]}>
                     <CreatePrescription />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="diagnoses"
+                element={
+                  <ProtectedRoute roles={["Physician"]}>
+                    <Diagnoses />
                   </ProtectedRoute>
                 }
               />
@@ -305,6 +324,24 @@ function App() {
                     ]}
                   >
                     <Reports />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Profile Settings - Available to all authenticated users */}
+              <Route
+                path="profile"
+                element={
+                  <ProtectedRoute
+                    roles={[
+                      "Admin",
+                      "Pharmacist",
+                      "Data Clerk",
+                      "Physician",
+                      "Drug Supplier",
+                    ]}
+                  >
+                    <UserProfile />
                   </ProtectedRoute>
                 }
               />
