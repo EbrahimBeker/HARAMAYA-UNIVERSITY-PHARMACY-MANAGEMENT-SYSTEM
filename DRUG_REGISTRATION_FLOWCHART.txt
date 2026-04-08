@@ -1,0 +1,155 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    DRUG REGISTRATION PROCESS FLOWCHART                    ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+                         START: Need to Add a Drug
+                                      │
+                                      ▼
+                    ┌─────────────────────────────────┐
+                    │ Does the drug exist in system?  │
+                    └─────────────────────────────────┘
+                              │           │
+                         YES  │           │  NO
+                              │           │
+                ┌─────────────┘           └─────────────┐
+                ▼                                       ▼
+    ┌───────────────────────┐              ┌───────────────────────┐
+    │   SUPPLIER PROCESS    │              │    ADMIN PROCESS      │
+    │  (Add to Catalog)     │              │  (Register Drug)      │
+    └───────────────────────┘              └───────────────────────┘
+                │                                       │
+                ▼                                       ▼
+    ┌───────────────────────┐              ┌───────────────────────┐
+    │ Login as Supplier     │              │ Login as Admin        │
+    │ (supplier/supply123)  │              │ (admin/admin123)      │
+    └───────────────────────┘              └───────────────────────┘
+                │                                       │
+                ▼                                       ▼
+    ┌───────────────────────┐              ┌───────────────────────┐
+    │ Go to:                │              │ Go to:                │
+    │ Supplier Catalog      │              │ Medicines Management  │
+    └───────────────────────┘              └───────────────────────┘
+                │                                       │
+                ▼                                       ▼
+    ┌───────────────────────┐              ┌───────────────────────┐
+    │ Choose Method:        │              │ Click:                │
+    │ • Add Item (Manual)   │              │ "Add New Medicine"    │
+    │ • Upload (Bulk)       │              │                       │
+    └───────────────────────┘              └───────────────────────┘
+                │                                       │
+        ┌───────┴───────┐                              ▼
+        │               │                  ┌───────────────────────┐
+        ▼               ▼                  │ Fill in Details:      │
+┌──────────┐    ┌──────────┐              │ • Name                │
+│  Manual  │    │   Bulk   │              │ • Generic Name        │
+│   Add    │    │  Upload  │              │ • Category            │
+└──────────┘    └──────────┘              │ • Type                │
+      │               │                    │ • Strength            │
+      ▼               ▼                    │ • Unit                │
+┌──────────┐    ┌──────────┐              │ • Manufacturer        │
+│ Select   │    │ Select   │              │ • Description         │
+│ Medicine │    │ Excel/   │              │ • Reorder Level       │
+│ from     │    │ CSV File │              └───────────────────────┘
+│ Dropdown │    │          │                          │
+└──────────┘    └──────────┘                          ▼
+      │               │                    ┌───────────────────────┐
+      ▼               ▼                    │ Click "Save"          │
+┌──────────┐    ┌──────────┐              └───────────────────────┘
+│ Enter:   │    │ Upload   │                          │
+│ • Price  │    │ File     │                          ▼
+│ • Qty    │    │          │              ┌───────────────────────┐
+│ • Min    │    │          │              │ Drug Registered!      │
+│ • Notes  │    │          │              │ Now in System         │
+└──────────┘    └──────────┘              └───────────────────────┘
+      │               │                                │
+      ▼               ▼                                │
+┌──────────┐    ┌──────────┐                          │
+│ Click    │    │ System   │                          │
+│ "Save"   │    │ Processes│                          │
+└──────────┘    └──────────┘                          │
+      │               │                                │
+      └───────┬───────┘                                │
+              ▼                                        │
+  ┌───────────────────────┐                           │
+  │ Item Added to Your    │                           │
+  │ Catalog!              │                           │
+  │                       │                           │
+  │ If existing:          │                           │
+  │ • Qty ADDED           │                           │
+  │ • Price UPDATED       │                           │
+  └───────────────────────┘                           │
+              │                                        │
+              └────────────────────────────────────────┘
+                                  │
+                                  ▼
+                    ┌─────────────────────────────────┐
+                    │ Suppliers can now add to catalog│
+                    └─────────────────────────────────┘
+                                  │
+                                  ▼
+                    ┌─────────────────────────────────┐
+                    │ Pharmacists can order from      │
+                    │ suppliers who have it           │
+                    └─────────────────────────────────┘
+                                  │
+                                  ▼
+                              ✓ COMPLETE
+
+
+═══════════════════════════════════════════════════════════════════════════
+
+                            ROLE PERMISSIONS
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                                                                         │
+│  ADMINISTRATOR                                                          │
+│  ✓ Register new drugs in system                                        │
+│  ✓ Edit drug information                                               │
+│  ✓ Delete drugs                                                         │
+│  ✓ Manage categories and types                                         │
+│  ✓ View all catalogs                                                    │
+│                                                                         │
+│  SUPPLIER                                                               │
+│  ✓ Add existing drugs to their catalog                                 │
+│  ✓ Set prices for their drugs                                          │
+│  ✓ Update quantities                                                    │
+│  ✓ Bulk upload catalog                                                  │
+│  ✗ Cannot register new drugs                                           │
+│                                                                         │
+│  PHARMACIST                                                             │
+│  ✓ View supplier catalogs                                              │
+│  ✓ Create purchase orders                                              │
+│  ✓ Manage inventory                                                     │
+│  ✗ Cannot add drugs to system                                          │
+│  ✗ Cannot modify supplier catalogs                                     │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+
+                        CURRENT SYSTEM STATUS
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                                                                         │
+│  MEDICINES IN SYSTEM: 6                                                 │
+│                                                                         │
+│  1. Amlodipine      - Blood Pressure                                    │
+│  2. Amoxicillin     - Antibiotic                                        │
+│  3. Ciprofloxacin   - Antibiotic                                        │
+│  4. Ibuprofen       - Anti-inflammatory                                 │
+│  5. Omeprazole      - Gastric                                           │
+│  6. Paracetamol     - Pain Relief                                       │
+│                                                                         │
+│  SUPPLIERS CAN:                                                         │
+│  • Add any of these 6 to their catalog                                  │
+│  • Set their own prices                                                 │
+│  • Manage their quantities                                              │
+│                                                                         │
+│  TO ADD MORE:                                                           │
+│  • Contact administrator                                                │
+│  • Admin registers new drug                                             │
+│  • Then suppliers can add it                                            │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════

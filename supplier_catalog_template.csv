@@ -1,0 +1,21 @@
+medicine_name,unit_price,quantity_available,minimum_order_quantity,notes
+Paracetamol,5.50,500,10,Pain reliever and fever reducer
+Ibuprofen,8.75,300,10,Anti-inflammatory medication
+Amoxicillin,15.00,200,5,Antibiotic for bacterial infections
+Ciprofloxacin,25.00,150,5,Broad-spectrum antibiotic
+Metformin,12.50,400,10,Diabetes medication
+Amlodipine,20.00,250,10,Blood pressure medication
+Omeprazole,18.00,300,10,Proton pump inhibitor for acid reflux
+Atorvastatin,30.00,200,5,Cholesterol-lowering medication
+Losartan,22.00,180,10,Blood pressure medication (ARB)
+Aspirin,3.50,600,20,Pain reliever and blood thinner
+Cetirizine,6.00,350,10,Antihistamine for allergies
+Diclofenac,10.00,250,10,NSAID for pain and inflammation
+Ranitidine,8.50,280,10,H2 blocker for stomach acid
+Salbutamol,35.00,100,5,Bronchodilator for asthma
+Insulin,150.00,50,2,Diabetes treatment - refrigerate
+Azithromycin,28.00,120,5,Macrolide antibiotic
+Doxycycline,18.00,150,5,Tetracycline antibiotic
+Prednisolone,12.00,200,10,Corticosteroid for inflammation
+Furosemide,7.50,300,10,Diuretic for fluid retention
+Warfarin,15.00,100,5,Anticoagulant - requires monitoring
