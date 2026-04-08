@@ -440,4 +440,205 @@ exports.cancel = async (req, res, next) => {
   }
 };
 
+// Pharmacist: Upload payment receipt
+exports.uploadPaymentReceipt = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { payment_date, payment_notes } = req.body;
+
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ message: "Payment receipt image is required" });
+    }
+
+    // Get order details
+    const [orders] = await db.execute(
+      "SELECT * FROM purchase_orders WHERE id = ?",
+      [id],
+    );
+
+    if (orders.length === 0) {
+      return res.status(404).json({ message: "Purchase order not found" });
+    }
+
+    const order = orders[0];
+
+    // Check if order is confirmed
+    if (order.status !== "confirmed") {
+      return res.status(400).json({
+        message: "Can only upload payment receipt for confirmed orders",
+      });
+    }
+
+    // Store the file path (relative to uploads directory)
+    const receiptPath = `payment-receipts/${req.file.filename}`;
+
+    // Update order with payment receipt
+    await db.execute(
+      `UPDATE purchase_orders 
+       SET payment_status = 'pending_verification',
+           payment_receipt_image = ?,
+           payment_date = ?,
+           payment_notes = ?,
+           payment_uploaded_at = NOW()
+       WHERE id = ?`,
+      [receiptPath, payment_date || null, payment_notes || null, id],
+    );
+
+    res.json({
+      message: "Payment receipt uploaded successfully",
+      receipt_path: receiptPath,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Supplier: Confirm payment and mark as delivered
+exports.confirmPaymentAndDeliver = async (req, res, next) => {
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const { id } = req.params;
+    const { actual_delivery_date, items } = req.body;
+
+    // Get order details
+    const [orders] = await connection.execute(
+      "SELECT * FROM purchase_orders WHERE id = ?",
+      [id],
+    );
+
+    if (orders.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Purchase order not found" });
+    }
+
+    const order = orders[0];
+
+    // Check if payment receipt is uploaded
+    if (!order.payment_receipt_image) {
+      await connection.rollback();
+      return res.status(400).json({
+        message: "Cannot deliver order without payment receipt",
+      });
+    }
+
+    // Update order status to delivered and mark payment as verified
+    await connection.execute(
+      `UPDATE purchase_orders 
+       SET status = 'delivered',
+           payment_status = 'paid',
+           actual_delivery_date = ?,
+           payment_verified_at = NOW(),
+           payment_verified_by = ?
+       WHERE id = ?`,
+      [
+        actual_delivery_date || new Date().toISOString().split("T")[0],
+        req.user.id,
+        id,
+      ],
+    );
+
+    // Update received quantities and add to inventory
+    for (const item of items) {
+      const quantityReceived = item.quantity_received || item.quantity_ordered;
+
+      // Update purchase order item
+      await connection.execute(
+        `UPDATE purchase_order_items 
+         SET quantity_received = ?
+         WHERE id = ?`,
+        [quantityReceived, item.id],
+      );
+
+      // Get medicine details
+      const [orderItems] = await connection.execute(
+        "SELECT medicine_id FROM purchase_order_items WHERE id = ?",
+        [item.id],
+      );
+
+      if (orderItems.length > 0) {
+        const medicineId = orderItems[0].medicine_id;
+
+        // Update stock inventory
+        const [existingStock] = await connection.execute(
+          "SELECT * FROM stock_inventory WHERE medicine_id = ?",
+          [medicineId],
+        );
+
+        if (existingStock.length > 0) {
+          await connection.execute(
+            `UPDATE stock_inventory 
+             SET quantity_available = quantity_available + ?
+             WHERE medicine_id = ?`,
+            [quantityReceived, medicineId],
+          );
+        } else {
+          await connection.execute(
+            `INSERT INTO stock_inventory (medicine_id, quantity_available)
+             VALUES (?, ?)`,
+            [medicineId, quantityReceived],
+          );
+        }
+
+        // Record stock in transaction
+        await connection.execute(
+          `INSERT INTO stock_in (
+            medicine_id, supplier_id, quantity, batch_number,
+            expiry_date, received_by, received_date, purchase_order_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            medicineId,
+            order.supplier_id,
+            quantityReceived,
+            item.batch_number || `PO-${order.order_number}`,
+            item.expiry_date || null,
+            order.pharmacist_id,
+            actual_delivery_date || new Date().toISOString().split("T")[0],
+            id,
+          ],
+        );
+      }
+    }
+
+    await connection.commit();
+
+    res.json({
+      message:
+        "Payment confirmed and order delivered. Inventory updated successfully.",
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error("Confirm payment and deliver error:", error);
+    next(error);
+  } finally {
+    connection.release();
+  }
+};
+
+// Get payment details including receipt
+exports.getPaymentDetails = async (req, res, next) => {
+  try {
+    const [result] = await db.execute(
+      `SELECT po.payment_status, po.payment_receipt_image, po.payment_date,
+              po.payment_notes, po.payment_uploaded_at, po.payment_verified_at,
+              CONCAT(u.first_name, ' ', u.last_name) as verified_by_name
+       FROM purchase_orders po
+       LEFT JOIN users u ON po.payment_verified_by = u.id
+       WHERE po.id = ?`,
+      [req.params.id],
+    );
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Purchase order not found" });
+    }
+
+    res.json(result[0]);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = exports;

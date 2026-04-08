@@ -17,6 +17,12 @@ const PurchaseOrders = () => {
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentReceipt, setPaymentReceipt] = useState(null);
+  const [paymentData, setPaymentData] = useState({
+    payment_date: new Date().toISOString().split("T")[0],
+    payment_notes: "",
+  });
   const [formData, setFormData] = useState({
     supplier_id: "",
     order_date: new Date().toISOString().split("T")[0],
@@ -209,6 +215,63 @@ const PurchaseOrders = () => {
     }
   };
 
+  const handleUploadReceipt = async (e) => {
+    e.preventDefault();
+
+    if (!paymentReceipt) {
+      toast.error("Please select a receipt image");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("receipt", paymentReceipt);
+      formData.append("payment_date", paymentData.payment_date);
+      formData.append("payment_notes", paymentData.payment_notes);
+
+      await purchaseOrdersAPI.uploadPaymentReceipt(selectedOrder.id, formData);
+      toast.success("Payment receipt uploaded successfully");
+      setShowPaymentModal(false);
+      setPaymentReceipt(null);
+      setPaymentData({
+        payment_date: new Date().toISOString().split("T")[0],
+        payment_notes: "",
+      });
+
+      // Reload order details
+      await viewOrder(selectedOrder.id);
+      await loadOrders();
+    } catch (error) {
+      console.error("Failed to upload receipt:", error);
+      toast.error(error.response?.data?.message || "Failed to upload receipt");
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "application/pdf",
+      ];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Only JPEG, PNG, and PDF files are allowed");
+        return;
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+
+      setPaymentReceipt(file);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const styles = {
       pending: "bg-yellow-100 text-yellow-800",
@@ -217,6 +280,23 @@ const PurchaseOrders = () => {
       cancelled: "bg-red-100 text-red-800",
     };
     return styles[status] || "bg-gray-100 text-gray-800";
+  };
+
+  const getPaymentStatusBadge = (paymentStatus) => {
+    const styles = {
+      unpaid: "bg-red-100 text-red-800",
+      pending_verification: "bg-yellow-100 text-yellow-800",
+      paid: "bg-green-100 text-green-800",
+    };
+    const labels = {
+      unpaid: "Unpaid",
+      pending_verification: "Pending Verification",
+      paid: "Paid",
+    };
+    return {
+      style: styles[paymentStatus] || "bg-gray-100 text-gray-800",
+      label: labels[paymentStatus] || paymentStatus,
+    };
   };
 
   const totalAmount = orderItems.reduce(
@@ -274,46 +354,61 @@ const PurchaseOrders = () => {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                     Status
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Payment
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-mono font-semibold text-blue-600">
-                      {order.order_number}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {order.supplier_name}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Date(order.order_date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">
-                      ${parseFloat(order.total_amount).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(
-                          order.status,
-                        )}`}
-                      >
-                        {order.status.charAt(0).toUpperCase() +
-                          order.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => viewOrder(order.id)}
-                        className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {orders.map((order) => {
+                  const paymentBadge = getPaymentStatusBadge(
+                    order.payment_status || "unpaid",
+                  );
+                  return (
+                    <tr key={order.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm font-mono font-semibold text-blue-600">
+                        {order.order_number}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {order.supplier_name}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {new Date(order.order_date).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                        {parseFloat(order.total_amount).toFixed(2)} ETB
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(
+                            order.status,
+                          )}`}
+                        >
+                          {order.status.charAt(0).toUpperCase() +
+                            order.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${paymentBadge.style}`}
+                        >
+                          {paymentBadge.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => viewOrder(order.id)}
+                          className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           ) : (
@@ -658,7 +753,7 @@ const PurchaseOrders = () => {
         </div>
       )}
 
-      {/* View Order Modal - Simplified for now */}
+      {/* View Order Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
@@ -711,6 +806,69 @@ const PurchaseOrders = () => {
                 </div>
               </div>
 
+              {/* Payment Status Section */}
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-gray-900">
+                    Payment Status
+                  </h3>
+                  {(() => {
+                    const paymentBadge = getPaymentStatusBadge(
+                      selectedOrder.payment_status || "unpaid",
+                    );
+                    return (
+                      <span
+                        className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${paymentBadge.style}`}
+                      >
+                        {paymentBadge.label}
+                      </span>
+                    );
+                  })()}
+                </div>
+
+                {selectedOrder.payment_receipt_image && (
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-600 mb-2">
+                      Payment Receipt:
+                    </p>
+                    <img
+                      src={`http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`}
+                      alt="Payment Receipt"
+                      className="max-w-xs rounded-lg border border-gray-300 cursor-pointer hover:opacity-90"
+                      onClick={() =>
+                        window.open(
+                          `http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`,
+                          "_blank",
+                        )
+                      }
+                    />
+                    {selectedOrder.payment_date && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        Payment Date:{" "}
+                        {new Date(
+                          selectedOrder.payment_date,
+                        ).toLocaleDateString()}
+                      </p>
+                    )}
+                    {selectedOrder.payment_notes && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Notes: {selectedOrder.payment_notes}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {selectedOrder.status === "confirmed" &&
+                  selectedOrder.payment_status === "unpaid" && (
+                    <button
+                      onClick={() => setShowPaymentModal(true)}
+                      className="mt-3 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    >
+                      Upload Payment Receipt
+                    </button>
+                  )}
+              </div>
+
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="font-semibold text-gray-900 mb-2">Items</h3>
                 <div className="space-y-2">
@@ -718,8 +876,8 @@ const PurchaseOrders = () => {
                     <div key={index} className="flex justify-between text-sm">
                       <span>{item.medicine_name}</span>
                       <span>
-                        {item.quantity_ordered} × $
-                        {parseFloat(item.unit_price).toFixed(2)}
+                        {item.quantity_ordered} ×{" "}
+                        {parseFloat(item.unit_price).toFixed(2)} ETB
                       </span>
                     </div>
                   ))}
@@ -727,7 +885,7 @@ const PurchaseOrders = () => {
                 <div className="mt-2 pt-2 border-t border-gray-200 flex justify-between font-semibold">
                   <span>Total</span>
                   <span>
-                    ${parseFloat(selectedOrder.total_amount).toFixed(2)}
+                    {parseFloat(selectedOrder.total_amount).toFixed(2)} ETB
                   </span>
                 </div>
               </div>
@@ -741,6 +899,115 @@ const PurchaseOrders = () => {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Receipt Upload Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white px-6 py-4 flex items-center justify-between rounded-t-xl">
+              <h2 className="text-xl font-bold">Upload Payment Receipt</h2>
+              <button
+                onClick={() => {
+                  setShowPaymentModal(false);
+                  setPaymentReceipt(null);
+                }}
+                className="text-white hover:text-gray-200"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleUploadReceipt} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Receipt Image/PDF *
+                </label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,application/pdf"
+                  onChange={handleFileChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Accepted: JPEG, PNG, PDF (max 5MB)
+                </p>
+                {paymentReceipt && (
+                  <p className="text-sm text-green-600 mt-2">
+                    ✓ Selected: {paymentReceipt.name}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Payment Date
+                </label>
+                <input
+                  type="date"
+                  value={paymentData.payment_date}
+                  onChange={(e) =>
+                    setPaymentData({
+                      ...paymentData,
+                      payment_date: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Payment Notes (Optional)
+                </label>
+                <textarea
+                  value={paymentData.payment_notes}
+                  onChange={(e) =>
+                    setPaymentData({
+                      ...paymentData,
+                      payment_notes: e.target.value,
+                    })
+                  }
+                  rows={3}
+                  placeholder="e.g., Paid via bank transfer, Transaction ID: 123456"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPaymentModal(false);
+                    setPaymentReceipt(null);
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                >
+                  Upload Receipt
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -203,6 +203,13 @@ export const purchaseOrdersAPI = {
   markDelivered: (id, data) => api.post(`/purchase-orders/${id}/deliver`, data),
   receiveStock: (id, data) => api.post(`/purchase-orders/${id}/receive`, data),
   cancel: (id, reason) => api.post(`/purchase-orders/${id}/cancel`, { reason }),
+  uploadPaymentReceipt: (id, formData) =>
+    api.post(`/purchase-orders/${id}/upload-receipt`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  confirmPaymentAndDeliver: (id, data) =>
+    api.post(`/purchase-orders/${id}/confirm-payment-deliver`, data),
+  getPaymentDetails: (id) => api.get(`/purchase-orders/${id}/payment-details`),
 };
 
 // Supplier Catalog API

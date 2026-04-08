@@ -5,8 +5,21 @@ import { Plus, Edit, Trash2, Search } from "lucide-react";
 import Modal from "../../components/Common/Modal";
 import Loading from "../../components/Common/Loading";
 import { useAuth } from "../../context/AuthContext";
+import MedicineManagement from "../Admin/MedicineManagement";
 
 const Medicines = () => {
+  const { hasAnyRole } = useAuth();
+
+  // If user is Admin, show the new MedicineManagement component
+  if (hasAnyRole(["Admin"])) {
+    return <MedicineManagement />;
+  }
+
+  // Otherwise show the old medicines list for Pharmacist/Physician
+  return <MedicinesList />;
+};
+
+const MedicinesList = () => {
   const [medicines, setMedicines] = useState([]);
   const [categories, setCategories] = useState([]);
   const [types, setTypes] = useState([]);

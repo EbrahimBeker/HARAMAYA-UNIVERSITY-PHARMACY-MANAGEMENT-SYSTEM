@@ -1,20 +1,22 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { body } = require('express-validator');
-const typeController = require('../controllers/typeController');
-const { authenticate, authorize } = require('../middleware/auth');
-const validate = require('../middleware/validator');
+const { body } = require("express-validator");
+const typeController = require("../controllers/typeController");
+const { authenticate, authorize } = require("../middleware/auth");
+const validate = require("../middleware/validator");
 
 router.use(authenticate);
 
-router.get('/', typeController.getAll);
+router.get("/", typeController.getAll);
 
-router.post('/', authorize('System Administrator', 'Pharmacist'), [
-  body('name').notEmpty().withMessage('Name is required'),
-  validate
-], typeController.create);
+router.post(
+  "/",
+  authorize("Admin", "Pharmacist"),
+  [body("name").notEmpty().withMessage("Name is required"), validate],
+  typeController.create,
+);
 
-router.put('/:id', authorize('System Administrator', 'Pharmacist'), typeController.update);
-router.delete('/:id', authorize('System Administrator', 'Pharmacist'), typeController.delete);
+router.put("/:id", authorize("Admin", "Pharmacist"), typeController.update);
+router.delete("/:id", authorize("Admin", "Pharmacist"), typeController.delete);
 
 module.exports = router;

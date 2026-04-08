@@ -4,6 +4,7 @@ const { body } = require("express-validator");
 const purchaseOrderController = require("../controllers/purchaseOrderController");
 const { authenticate, checkPermission } = require("../middleware/auth");
 const validate = require("../middleware/validator");
+const { uploadPaymentReceipt } = require("../config/upload");
 
 router.use(authenticate);
 
@@ -54,6 +55,23 @@ router.post("/:id/confirm", purchaseOrderController.confirmOrder);
 
 // Supplier: Mark as delivered
 router.post("/:id/deliver", purchaseOrderController.markDelivered);
+
+// Pharmacist: Upload payment receipt
+router.post(
+  "/:id/upload-receipt",
+  checkPermission("manage_inventory"),
+  uploadPaymentReceipt.single("receipt"),
+  purchaseOrderController.uploadPaymentReceipt,
+);
+
+// Supplier: Confirm payment and deliver
+router.post(
+  "/:id/confirm-payment-deliver",
+  purchaseOrderController.confirmPaymentAndDeliver,
+);
+
+// Get payment details
+router.get("/:id/payment-details", purchaseOrderController.getPaymentDetails);
 
 // Pharmacist: Receive stock
 router.post(

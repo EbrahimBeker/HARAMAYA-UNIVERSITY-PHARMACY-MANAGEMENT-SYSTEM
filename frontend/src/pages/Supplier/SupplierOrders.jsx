@@ -93,6 +93,14 @@ const SupplierOrders = () => {
   };
 
   const handleMarkDelivered = async () => {
+    // Check if payment receipt exists
+    if (!selectedOrder.payment_receipt_image) {
+      toast.error(
+        "Cannot deliver order without payment receipt from pharmacist",
+      );
+      return;
+    }
+
     // Validate that all items have batch numbers
     const missingBatch = deliveryData.items.some((item) => !item.batch_number);
     if (missingBatch) {
@@ -101,16 +109,20 @@ const SupplierOrders = () => {
     }
 
     try {
-      await purchaseOrdersAPI.markDelivered(selectedOrder.id, deliveryData);
+      await purchaseOrdersAPI.confirmPaymentAndDeliver(
+        selectedOrder.id,
+        deliveryData,
+      );
       toast.success(
-        "Order marked as delivered and inventory updated successfully",
+        "Payment confirmed, order delivered, and inventory updated successfully",
       );
       setShowDeliveryModal(false);
       setSelectedOrder(null);
       loadOrders();
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Failed to mark order as delivered",
+        error.response?.data?.message ||
+          "Failed to confirm payment and deliver order",
       );
     }
   };
@@ -139,6 +151,24 @@ const SupplierOrders = () => {
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
+  };
+
+  const getPaymentStatusBadge = (paymentStatus) => {
+    const styles = {
+      unpaid: "bg-red-100 text-red-800 border-red-300",
+      pending_verification: "bg-yellow-100 text-yellow-800 border-yellow-300",
+      paid: "bg-green-100 text-green-800 border-green-300",
+    };
+    const labels = {
+      unpaid: "Unpaid",
+      pending_verification: "Pending Verification",
+      paid: "Paid",
+    };
+    return {
+      style:
+        styles[paymentStatus] || "bg-gray-100 text-gray-800 border-gray-300",
+      label: labels[paymentStatus] || paymentStatus,
+    };
   };
 
   const stats = {
@@ -243,6 +273,9 @@ const SupplierOrders = () => {
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Payment
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -250,66 +283,81 @@ const SupplierOrders = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-12 text-center">
+                  <td colSpan="8" className="px-6 py-12 text-center">
                     <Package className="mx-auto text-gray-400 mb-3" size={48} />
                     <p className="text-gray-500">No purchase orders yet</p>
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="font-mono text-sm font-semibold text-blue-600">
-                        {order.order_number}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(order.order_date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.pharmacist_name || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {order.item_count || 0} items
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      {(parseFloat(order.total_amount) || 0).toFixed(2)} ETB
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(order.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleViewDetails(order.id)}
-                          className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                orders.map((order) => {
+                  const paymentBadge = getPaymentStatusBadge(
+                    order.payment_status || "unpaid",
+                  );
+                  return (
+                    <tr key={order.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="font-mono text-sm font-semibold text-blue-600">
+                          {order.order_number}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(order.order_date).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {order.pharmacist_name || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {order.item_count || 0} items
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                        {(parseFloat(order.total_amount) || 0).toFixed(2)} ETB
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(order.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold border ${paymentBadge.style}`}
                         >
-                          <Eye size={16} />
-                          View
-                        </button>
-                        {order.status === "pending" && (
+                          {paymentBadge.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleConfirmOrder(order.id)}
-                            disabled={confirmingOrder === order.id}
-                            className="text-green-600 hover:text-green-800 font-medium flex items-center gap-1 disabled:opacity-50"
+                            onClick={() => handleViewDetails(order.id)}
+                            className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
                           >
-                            <CheckCircle size={16} />
-                            Confirm
+                            <Eye size={16} />
+                            View
                           </button>
-                        )}
-                        {order.status === "confirmed" && (
-                          <button
-                            onClick={() => handleOpenDeliveryModal(order.id)}
-                            className="text-green-600 hover:text-green-800 font-medium flex items-center gap-1"
-                          >
-                            <CheckCircle size={16} />
-                            Delivered
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {order.status === "pending" && (
+                            <button
+                              onClick={() => handleConfirmOrder(order.id)}
+                              disabled={confirmingOrder === order.id}
+                              className="text-green-600 hover:text-green-800 font-medium flex items-center gap-1 disabled:opacity-50"
+                            >
+                              <CheckCircle size={16} />
+                              Confirm
+                            </button>
+                          )}
+                          {order.status === "confirmed" &&
+                            order.payment_receipt_image && (
+                              <button
+                                onClick={() =>
+                                  handleOpenDeliveryModal(order.id)
+                                }
+                                className="text-green-600 hover:text-green-800 font-medium flex items-center gap-1"
+                              >
+                                <CheckCircle size={16} />
+                                Deliver
+                              </button>
+                            )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -370,6 +418,70 @@ const SupplierOrders = () => {
                     {selectedOrder.pharmacist_name || "N/A"}
                   </p>
                 </div>
+              </div>
+
+              {/* Payment Status Section */}
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-900">
+                    Payment Status
+                  </h3>
+                  {(() => {
+                    const paymentBadge = getPaymentStatusBadge(
+                      selectedOrder.payment_status || "unpaid",
+                    );
+                    return (
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border ${paymentBadge.style}`}
+                      >
+                        {paymentBadge.label}
+                      </span>
+                    );
+                  })()}
+                </div>
+
+                {selectedOrder.payment_receipt_image ? (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Payment Receipt:
+                    </p>
+                    <img
+                      src={`http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`}
+                      alt="Payment Receipt"
+                      className="max-w-md rounded-lg border border-gray-300 cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() =>
+                        window.open(
+                          `http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`,
+                          "_blank",
+                        )
+                      }
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      Click image to view full size
+                    </p>
+                    {selectedOrder.payment_date && (
+                      <p className="text-sm text-gray-600 mt-2">
+                        Payment Date:{" "}
+                        {new Date(
+                          selectedOrder.payment_date,
+                        ).toLocaleDateString()}
+                      </p>
+                    )}
+                    {selectedOrder.payment_notes && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        Notes: {selectedOrder.payment_notes}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-500">
+                      {selectedOrder.status === "confirmed"
+                        ? "Waiting for pharmacist to upload payment receipt"
+                        : "No payment receipt uploaded yet"}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Order Items */}
@@ -460,13 +572,28 @@ const SupplierOrders = () => {
                   </button>
                 )}
                 {selectedOrder.status === "confirmed" && (
-                  <button
-                    onClick={() => handleOpenDeliveryModal(selectedOrder.id)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                  >
-                    <CheckCircle size={18} />
-                    Mark as Delivered
-                  </button>
+                  <>
+                    {selectedOrder.payment_receipt_image ? (
+                      <button
+                        onClick={() =>
+                          handleOpenDeliveryModal(selectedOrder.id)
+                        }
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                      >
+                        <CheckCircle size={18} />
+                        Confirm Payment & Deliver
+                      </button>
+                    ) : (
+                      <button
+                        disabled
+                        className="px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed flex items-center gap-2"
+                        title="Waiting for payment receipt from pharmacist"
+                      >
+                        <CheckCircle size={18} />
+                        Waiting for Payment Receipt
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
