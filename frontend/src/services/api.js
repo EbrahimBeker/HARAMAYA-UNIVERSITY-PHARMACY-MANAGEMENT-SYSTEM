@@ -167,6 +167,8 @@ export const suppliersAPI = {
   getOne: (id) => api.get(`/suppliers/${id}`),
   update: (id, data) => api.put(`/suppliers/${id}`, data),
   delete: (id) => api.delete(`/suppliers/${id}`),
+  getMyInfo: () => api.get("/suppliers/me/info"),
+  updateBankAccount: (data) => api.put("/suppliers/me/bank-account", data),
 };
 
 // Roles API

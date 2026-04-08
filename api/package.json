@@ -1,5 +1,5 @@
 {
-  "name": "haramaya-pharmacy-backend",
+  "name": "haramaya-university-pharmacy-backend",
   "version": "1.0.0",
   "description": "Haramaya University Pharmacy Management System - Node.js Backend",
   "main": "server.js",

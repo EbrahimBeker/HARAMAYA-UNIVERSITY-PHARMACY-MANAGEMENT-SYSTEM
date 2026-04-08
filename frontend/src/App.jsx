@@ -21,6 +21,7 @@ import PharmacistDashboard from "./pages/Pharmacist/PharmacistDashboard";
 import SupplierDashboard from "./pages/Supplier/SupplierDashboard";
 import SupplierOrders from "./pages/Supplier/SupplierOrders";
 import SupplierCatalog from "./pages/Supplier/SupplierCatalog";
+import BankAccountSettings from "./pages/Supplier/BankAccountSettings";
 
 // Pharmacist specific pages
 import DrugDispensing from "./pages/Pharmacist/DrugDispensing";
@@ -294,6 +295,14 @@ function App() {
                 element={
                   <ProtectedRoute roles={["Drug Supplier"]}>
                     <SupplierCatalog />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="supplier/bank-account"
+                element={
+                  <ProtectedRoute roles={["Drug Supplier"]}>
+                    <BankAccountSettings />
                   </ProtectedRoute>
                 }
               />

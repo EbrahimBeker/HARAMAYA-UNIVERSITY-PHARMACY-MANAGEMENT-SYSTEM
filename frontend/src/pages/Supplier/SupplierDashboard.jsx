@@ -9,6 +9,7 @@ import {
   TrendingUp,
   Clock,
   ArrowRight,
+  Building2,
 } from "lucide-react";
 
 const SupplierDashboard = () => {
@@ -194,7 +195,7 @@ const SupplierDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Manage Orders */}
           <Link
             to="/supplier/orders"
@@ -275,6 +276,40 @@ const SupplierDashboard = () => {
                     {stats.catalogItems} total items
                   </span>
                 </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Bank Account Settings */}
+          <Link
+            to="/supplier/bank-account"
+            className="group relative bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 border border-gray-100 overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+
+            <div className="relative">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-4 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl shadow-lg">
+                  <Building2 className="text-white" size={32} />
+                </div>
+                <ArrowRight
+                  className="text-gray-400 group-hover:text-yellow-600 group-hover:translate-x-2 transition-all duration-300"
+                  size={24}
+                />
+              </div>
+
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Bank Account
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Set up your payment receiving account
+              </p>
+
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span className="text-gray-600">
+                  Required for receiving payments
+                </span>
               </div>
             </div>
           </Link>

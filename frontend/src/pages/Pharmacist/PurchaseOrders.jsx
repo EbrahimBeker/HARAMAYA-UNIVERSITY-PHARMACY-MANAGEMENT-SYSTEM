@@ -7,6 +7,7 @@ import {
 } from "../../services/api";
 import { toast } from "react-toastify";
 import { Plus, Package, Eye, Search, Info } from "lucide-react";
+import ImageViewerModal from "../../components/Common/ImageViewerModal";
 
 const PurchaseOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -18,6 +19,7 @@ const PurchaseOrders = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
   const [paymentReceipt, setPaymentReceipt] = useState(null);
   const [paymentData, setPaymentData] = useState({
     payment_date: new Date().toISOString().split("T")[0],
@@ -669,7 +671,7 @@ const PurchaseOrders = () => {
                               updateItem(
                                 index,
                                 "quantity",
-                                parseInt(e.target.value),
+                                parseInt(e.target.value) || 1,
                               )
                             }
                             min="1"
@@ -831,17 +833,32 @@ const PurchaseOrders = () => {
                     <p className="text-sm text-gray-600 mb-2">
                       Payment Receipt:
                     </p>
-                    <img
-                      src={`http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`}
-                      alt="Payment Receipt"
-                      className="max-w-xs rounded-lg border border-gray-300 cursor-pointer hover:opacity-90"
-                      onClick={() =>
-                        window.open(
-                          `http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`,
-                          "_blank",
-                        )
-                      }
-                    />
+                    <div className="relative inline-block">
+                      <img
+                        src={`http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`}
+                        alt="Payment Receipt"
+                        className="max-w-xs rounded-lg border border-gray-300 cursor-pointer hover:opacity-90 hover:shadow-lg transition-all"
+                        onClick={() => setShowImageViewer(true)}
+                        onLoad={(e) => {
+                          console.log(
+                            "Image loaded successfully:",
+                            e.target.src,
+                          );
+                        }}
+                        onError={(e) => {
+                          console.error("Image failed to load:", e.target.src);
+                          console.error(
+                            "Payment receipt path:",
+                            selectedOrder.payment_receipt_image,
+                          );
+                          e.target.src =
+                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23f0f0f0' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3EImage not found%3C/text%3E%3C/svg%3E";
+                        }}
+                      />
+                      <div className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
+                        Click to zoom
+                      </div>
+                    </div>
                     {selectedOrder.payment_date && (
                       <p className="text-xs text-gray-500 mt-2">
                         Payment Date:{" "}
@@ -1010,6 +1027,15 @@ const PurchaseOrders = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Image Viewer Modal */}
+      {showImageViewer && selectedOrder?.payment_receipt_image && (
+        <ImageViewerModal
+          imageUrl={`http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`}
+          onClose={() => setShowImageViewer(false)}
+          title="Payment Receipt"
+        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-# Haramaya Pharmacy Backend API
+# Haramaya University Pharmacy Backend API
 
 Node.js/Express backend for the Haramaya University Pharmacy Management System.
 
@@ -75,11 +75,13 @@ JWT_EXPIRES_IN=24h
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/login` - User login
 - `POST /api/auth/logout` - User logout
 - `GET /api/auth/me` - Get current user
 
 ### Users
+
 - `GET /api/users` - List all users
 - `GET /api/users/:id` - Get user by ID
 - `POST /api/users` - Create user
@@ -87,6 +89,7 @@ JWT_EXPIRES_IN=24h
 - `DELETE /api/users/:id` - Delete user
 
 ### Medicines
+
 - `GET /api/medicines` - List all medicines
 - `GET /api/medicines/:id` - Get medicine by ID
 - `POST /api/medicines` - Create medicine
@@ -95,18 +98,21 @@ JWT_EXPIRES_IN=24h
 - `GET /api/medicines/search` - Search medicines
 
 ### Categories
+
 - `GET /api/medicine-categories` - List categories
 - `POST /api/medicine-categories` - Create category
 - `PUT /api/medicine-categories/:id` - Update category
 - `DELETE /api/medicine-categories/:id` - Delete category
 
 ### Types
+
 - `GET /api/medicine-types` - List types
 - `POST /api/medicine-types` - Create type
 - `PUT /api/medicine-types/:id` - Update type
 - `DELETE /api/medicine-types/:id` - Delete type
 
 ### Suppliers
+
 - `GET /api/suppliers` - List suppliers
 - `POST /api/suppliers` - Create supplier
 - `PUT /api/suppliers/:id` - Update supplier
@@ -224,15 +230,18 @@ Then restart the server - it will recreate everything automatically.
 ## Troubleshooting
 
 ### "Cannot connect to MySQL"
+
 - Check if MySQL is running
 - Verify credentials in `.env`
 - Ensure MySQL user has database creation privileges
 
 ### "Port 5000 already in use"
+
 - Change `PORT` in `.env`
 - Or stop the process using port 5000
 
 ### "Module not found"
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install

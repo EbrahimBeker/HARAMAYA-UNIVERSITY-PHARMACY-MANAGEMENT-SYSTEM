@@ -13,6 +13,8 @@ import {
   Shield,
   Activity,
   Sparkles,
+  ArrowRight,
+  CheckCircle,
 } from "lucide-react";
 
 const Login = () => {
@@ -46,11 +48,9 @@ const Login = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Clear any previous errors
     setError("");
     setLoading(true);
 
-    // Basic validation
     if (!credentials.username.trim() || !credentials.password.trim()) {
       setError("Please enter both username and password");
       setLoading(false);
@@ -61,7 +61,6 @@ const Login = () => {
       const result = await login(credentials);
       toast.success("Welcome back! Login successful");
 
-      // Role-based redirection
       const user = result.user;
       if (user?.roles?.length > 0) {
         const primaryRole = user.roles[0];
@@ -93,7 +92,6 @@ const Login = () => {
       let errorMessage = "Login failed. Please try again.";
 
       if (error.response) {
-        // Server responded with error status
         if (error.response.status === 401) {
           errorMessage = "Invalid username or password";
         } else if (error.response.status === 500) {
@@ -102,7 +100,6 @@ const Login = () => {
           errorMessage = error.response.data.message;
         }
       } else if (error.request) {
-        // Network error
         errorMessage =
           "Unable to connect to server. Please check your connection.";
       }
@@ -115,217 +112,312 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
-        {/* Simple dot pattern */}
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0">
+        {/* Grid Pattern */}
         <div
-          className="absolute inset-0 opacity-20"
+          className="absolute inset-0 opacity-10"
           style={{
-            backgroundImage:
-              "radial-gradient(circle, rgba(156, 146, 172, 0.3) 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
+            backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.3) 1px, transparent 1px),
+                             linear-gradient(90deg, rgba(139, 92, 246, 0.3) 1px, transparent 1px)`,
+            backgroundSize: "50px 50px",
           }}
         ></div>
 
-        {/* Floating Elements */}
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute top-40 right-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-40 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        {/* Gradient Orbs */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          {/* Main Login Card */}
-          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-            {/* Header Section */}
-            <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-10 text-center">
-              <div className="absolute inset-0 bg-black/10"></div>
-              <div className="relative z-10">
-                <div className="flex justify-center mb-4">
-                  <div className="relative">
-                    <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl border border-white/30">
-                      <Pill size={40} className="text-white" />
-                    </div>
-                    <div className="absolute -top-1 -right-1">
-                      <Sparkles
-                        size={16}
-                        className="text-yellow-300 animate-pulse"
-                      />
-                    </div>
-                  </div>
+        <div className="w-full max-w-6xl flex items-center gap-12">
+          {/* Left Side - Branding */}
+          <div className="hidden lg:flex flex-1 flex-col justify-center text-white space-y-8">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
+                <Sparkles size={20} className="text-yellow-300" />
+                <span className="text-sm font-semibold">
+                  Modern Healthcare Management
+                </span>
+              </div>
+
+              <h1 className="text-6xl font-bold leading-tight">
+                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  Haramaya
+                </span>
+                <br />
+                <span className="text-white">Pharmacy</span>
+              </h1>
+
+              <p className="text-xl text-gray-300 leading-relaxed max-w-md">
+                Streamline your pharmacy operations with our comprehensive
+                management system
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                  <CheckCircle size={20} className="text-white" />
                 </div>
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  Haramaya Pharmacy
-                </h1>
-                <p className="text-blue-100 text-lg font-medium">
-                  Management System
-                </p>
-                <div className="mt-4 flex items-center justify-center">
-                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full border border-white/30">
-                    <Shield size={14} className="text-green-300" />
-                    <span className="text-white text-sm font-medium">
-                      Secure Access
-                    </span>
-                  </div>
+                <div>
+                  <p className="font-semibold">Secure & Reliable</p>
+                  <p className="text-sm text-gray-400">
+                    Enterprise-grade security
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center">
+                  <CheckCircle size={20} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold">Real-time Updates</p>
+                  <p className="text-sm text-gray-400">
+                    Instant inventory tracking
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                  <CheckCircle size={20} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold">Easy to Use</p>
+                  <p className="text-sm text-gray-400">
+                    Intuitive interface design
+                  </p>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Form Section */}
-            <div className="px-8 py-8">
-              {/* System Status */}
-              <div className="mb-6 flex items-center justify-center gap-6">
-                <div
-                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
-                    systemStatus.api
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
-                  }`}
-                >
-                  <Activity size={14} />
-                  <span>API {systemStatus.api ? "Online" : "Offline"}</span>
+          {/* Right Side - Login Form */}
+          <div className="flex-1 max-w-md w-full">
+            <div className="bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+              {/* Header */}
+              <div className="relative px-8 py-8 text-center border-b border-white/10">
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-2xl shadow-lg">
+                      <Pill size={32} className="text-white" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+                  </div>
                 </div>
-                <div
-                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
-                    systemStatus.db
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
-                  }`}
-                >
-                  <Database size={14} />
-                  <span>
-                    Database {systemStatus.db ? "Connected" : "Offline"}
-                  </span>
-                </div>
+                <h2 className="text-2xl font-bold text-white mb-1">
+                  Welcome Back
+                </h2>
+                <p className="text-gray-300 text-sm">
+                  Sign in to continue to your dashboard
+                </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Error Display */}
-                {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">!</span>
-                      </div>
-                      <p className="text-red-700 font-medium text-sm">
+              {/* Form */}
+              <div className="px-8 py-8">
+                {/* System Status */}
+                <div className="mb-6 flex items-center justify-center gap-4">
+                  <div
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm ${
+                      systemStatus.api
+                        ? "bg-green-500/20 text-green-300 border border-green-500/30"
+                        : "bg-red-500/20 text-red-300 border border-red-500/30"
+                    }`}
+                  >
+                    <Activity size={12} />
+                    <span>API</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm ${
+                      systemStatus.db
+                        ? "bg-green-500/20 text-green-300 border border-green-500/30"
+                        : "bg-red-500/20 text-red-300 border border-red-500/30"
+                    }`}
+                  >
+                    <Database size={12} />
+                    <span>Database</span>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Error Display */}
+                  {error && (
+                    <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/30 rounded-xl p-4 animate-shake">
+                      <p className="text-red-300 font-medium text-sm text-center">
                         {error}
                       </p>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Username Field */}
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                    <User size={16} className="text-blue-600" />
-                    Username
-                  </label>
-                  <div className="relative">
+                  {/* Username */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-200">
+                      <User size={16} className="text-blue-400" />
+                      Username
+                    </label>
                     <input
                       type="text"
-                      className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400 ${
-                        error ? "border-red-300 bg-red-50" : "border-gray-200"
-                      }`}
+                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       value={credentials.username}
                       onChange={(e) => {
                         setCredentials({
                           ...credentials,
                           username: e.target.value,
                         });
-                        // Clear error when user starts typing
                         if (error) setError("");
                       }}
                       required
                       placeholder="Enter your username"
                     />
                   </div>
-                </div>
 
-                {/* Password Field */}
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                    <Lock size={16} className="text-blue-600" />
-                    Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      className={`w-full px-4 py-3 pr-12 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400 ${
-                        error ? "border-red-300 bg-red-50" : "border-gray-200"
-                      }`}
-                      value={credentials.password}
-                      onChange={(e) => {
-                        setCredentials({
-                          ...credentials,
-                          password: e.target.value,
-                        });
-                        // Clear error when user starts typing
-                        if (error) setError("");
-                      }}
-                      required
-                      placeholder="Enter your password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
+                  {/* Password */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-200">
+                      <Lock size={16} className="text-blue-400" />
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className="w-full px-4 py-3 pr-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        value={credentials.password}
+                        onChange={(e) => {
+                          setCredentials({
+                            ...credentials,
+                            password: e.target.value,
+                          });
+                          if (error) setError("");
+                        }}
+                        required
+                        placeholder="Enter your password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff size={20} />
+                        ) : (
+                          <Eye size={20} />
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                {/* Login Button */}
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Signing in...
-                    </div>
-                  ) : (
-                    "Sign In"
-                  )}
-                </button>
-              </form>
+                  {/* Login Button */}
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3.5 px-6 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 group"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Signing in...
+                      </>
+                    ) : (
+                      <>
+                        Sign In
+                        <ArrowRight
+                          size={20}
+                          className="group-hover:translate-x-1 transition-transform"
+                        />
+                      </>
+                    )}
+                  </button>
+                </form>
 
-              {/* Demo Credentials */}
-              <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
-                <div className="text-center">
-                  <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center justify-center gap-2">
-                    <Shield size={16} className="text-blue-600" />
-                    Demo Credentials
-                  </p>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="bg-white/70 backdrop-blur-sm p-2 rounded-lg border border-white/50">
-                      <p className="text-gray-600 font-medium">Username</p>
-                      <p className="font-mono font-bold text-blue-700">admin</p>
-                    </div>
-                    <div className="bg-white/70 backdrop-blur-sm p-2 rounded-lg border border-white/50">
-                      <p className="text-gray-600 font-medium">Password</p>
-                      <p className="font-mono font-bold text-blue-700">
-                        admin123
-                      </p>
+                {/* Demo Credentials */}
+                <div className="mt-6 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
+                  <div className="text-center">
+                    <p className="text-xs font-semibold text-gray-300 mb-3 flex items-center justify-center gap-2">
+                      <Shield size={14} className="text-blue-400" />
+                      Demo Credentials
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div className="bg-white/10 backdrop-blur-sm p-2.5 rounded-lg border border-white/20">
+                        <p className="text-gray-400 font-medium mb-1">
+                          Username
+                        </p>
+                        <p className="font-mono font-bold text-blue-300">
+                          admin
+                        </p>
+                      </div>
+                      <div className="bg-white/10 backdrop-blur-sm p-2.5 rounded-lg border border-white/20">
+                        <p className="text-gray-400 font-medium mb-1">
+                          Password
+                        </p>
+                        <p className="font-mono font-bold text-blue-300">
+                          admin123
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Footer */}
-            <div className="px-8 py-4 bg-gray-50 border-t border-gray-100">
-              <div className="text-center text-xs text-gray-500">
-                <p className="font-medium">© 2026 Haramaya University</p>
-                <p className="mt-1">Pharmacy Management System v2.0</p>
+              {/* Footer */}
+              <div className="px-8 py-4 bg-white/5 backdrop-blur-sm border-t border-white/10">
+                <div className="text-center text-xs text-gray-400">
+                  <p className="font-medium">© 2026 Haramaya University</p>
+                  <p className="mt-1">Pharmacy Management System v2.0</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Add custom animations */}
+      <style jsx>{`
+        @keyframes blob {
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+        }
+
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-10px);
+          }
+          75% {
+            transform: translateX(10px);
+          }
+        }
+
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+
+        .animate-shake {
+          animation: shake 0.5s;
+        }
+      `}</style>
     </div>
   );
 };

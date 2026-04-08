@@ -471,6 +471,20 @@ exports.uploadPaymentReceipt = async (req, res, next) => {
       });
     }
 
+    // Delete old receipt file if exists
+    if (order.payment_receipt_image) {
+      const fs = require("fs");
+      const path = require("path");
+      const oldFilePath = path.join(
+        __dirname,
+        "../uploads",
+        order.payment_receipt_image,
+      );
+      if (fs.existsSync(oldFilePath)) {
+        fs.unlinkSync(oldFilePath);
+      }
+    }
+
     // Store the file path (relative to uploads directory)
     const receiptPath = `payment-receipts/${req.file.filename}`;
 
@@ -487,7 +501,9 @@ exports.uploadPaymentReceipt = async (req, res, next) => {
     );
 
     res.json({
-      message: "Payment receipt uploaded successfully",
+      message: order.payment_receipt_image
+        ? "Payment receipt replaced successfully"
+        : "Payment receipt uploaded successfully",
       receipt_path: receiptPath,
     });
   } catch (error) {

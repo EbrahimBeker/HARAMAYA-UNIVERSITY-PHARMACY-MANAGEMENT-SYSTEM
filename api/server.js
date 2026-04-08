@@ -9,7 +9,17 @@ const initDatabase = require("./config/initDatabase");
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "img-src": ["'self'", "data:", "http://localhost:5000"],
+      },
+    },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -41,7 +51,10 @@ app.use("/api/supplier-catalog", require("./routes/supplierCatalog"));
 
 // Health check
 app.get("/health", (req, res) => {
-  res.json({ status: "OK", message: "Haramaya Pharmacy API is running" });
+  res.json({
+    status: "OK",
+    message: "Haramaya University Pharmacy API is running",
+  });
 });
 
 // 404 handler

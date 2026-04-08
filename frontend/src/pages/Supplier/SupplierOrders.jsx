@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { purchaseOrdersAPI } from "../../services/api";
 import { toast } from "react-toastify";
 import { Package, CheckCircle, XCircle, Eye, Clock } from "lucide-react";
+import ImageViewerModal from "../../components/Common/ImageViewerModal";
 
 const SupplierOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -10,6 +11,7 @@ const SupplierOrders = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [confirmingOrder, setConfirmingOrder] = useState(null);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
   const [deliveryData, setDeliveryData] = useState({
     actual_delivery_date: new Date().toISOString().split("T")[0],
     items: [],
@@ -445,19 +447,34 @@ const SupplierOrders = () => {
                     <p className="text-sm text-gray-600 mb-2">
                       Payment Receipt:
                     </p>
-                    <img
-                      src={`http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`}
-                      alt="Payment Receipt"
-                      className="max-w-md rounded-lg border border-gray-300 cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={() =>
-                        window.open(
-                          `http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`,
-                          "_blank",
-                        )
-                      }
-                    />
-                    <p className="text-xs text-gray-500 mt-2">
-                      Click image to view full size
+                    <div className="relative inline-block">
+                      <img
+                        src={`http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`}
+                        alt="Payment Receipt"
+                        className="max-w-md rounded-lg border-2 border-gray-300 cursor-pointer hover:border-blue-500 hover:shadow-xl transition-all"
+                        onClick={() => setShowImageViewer(true)}
+                        onLoad={(e) => {
+                          console.log(
+                            "Image loaded successfully:",
+                            e.target.src,
+                          );
+                        }}
+                        onError={(e) => {
+                          console.error("Image failed to load:", e.target.src);
+                          console.error(
+                            "Payment receipt path:",
+                            selectedOrder.payment_receipt_image,
+                          );
+                          e.target.src =
+                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23f0f0f0' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3EImage not found%3C/text%3E%3C/svg%3E";
+                        }}
+                      />
+                      <div className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-lg">
+                        🔍 Click to zoom
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2 italic">
+                      Click image to view with zoom controls
                     </p>
                     {selectedOrder.payment_date && (
                       <p className="text-sm text-gray-600 mt-2">
@@ -756,6 +773,15 @@ const SupplierOrders = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Image Viewer Modal */}
+      {showImageViewer && selectedOrder?.payment_receipt_image && (
+        <ImageViewerModal
+          imageUrl={`http://localhost:5000/uploads/${selectedOrder.payment_receipt_image}`}
+          onClose={() => setShowImageViewer(false)}
+          title="Payment Receipt - Verify Before Delivery"
+        />
       )}
     </div>
   );

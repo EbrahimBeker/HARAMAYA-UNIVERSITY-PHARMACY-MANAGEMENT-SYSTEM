@@ -295,18 +295,27 @@ CREATE TABLE purchase_orders (
     expected_delivery_date DATE,
     actual_delivery_date DATE,
     status ENUM('pending', 'confirmed', 'delivered', 'cancelled') DEFAULT 'pending',
+    payment_status ENUM('unpaid', 'pending_verification', 'paid') DEFAULT 'unpaid',
+    payment_receipt_image VARCHAR(255),
+    payment_date DATE,
+    payment_notes TEXT,
+    payment_uploaded_at TIMESTAMP NULL,
+    payment_verified_at TIMESTAMP NULL,
+    payment_verified_by BIGINT UNSIGNED,
     total_amount DECIMAL(10,2) DEFAULT 0,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE RESTRICT,
     FOREIGN KEY (pharmacist_id) REFERENCES users(id) ON DELETE RESTRICT,
+    FOREIGN KEY (payment_verified_by) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_order_number (order_number),
     INDEX idx_supplier (supplier_id),
     INDEX idx_pharmacist (pharmacist_id),
     INDEX idx_status (status),
+    INDEX idx_payment_status (payment_status),
     INDEX idx_order_date (order_date)
-) ENGINE=InnoDB COMMENT='Purchase orders to suppliers';
+) ENGINE=InnoDB COMMENT='Purchase orders to suppliers with payment tracking';
 
 -- Purchase Order Items
 CREATE TABLE purchase_order_items (

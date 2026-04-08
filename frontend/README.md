@@ -1,4 +1,4 @@
-# Haramaya Pharmacy Frontend
+# Haramaya University Pharmacy Frontend
 
 React frontend for the Haramaya University Pharmacy Management System.
 

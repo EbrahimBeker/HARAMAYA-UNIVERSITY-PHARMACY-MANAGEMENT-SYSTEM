@@ -74,11 +74,21 @@ exports.getAll = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { name, contact_person, email, phone, address, user_id } = req.body;
+    const {
+      name,
+      contact_person,
+      email,
+      phone,
+      address,
+      user_id,
+      bank_name,
+      account_number,
+      account_holder_name,
+    } = req.body;
     const created_by = req.user.id; // Track who created this supplier
 
     const [result] = await db.execute(
-      "INSERT INTO suppliers (name, contact_person, email, phone, address, user_id, created_by, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
+      "INSERT INTO suppliers (name, contact_person, email, phone, address, user_id, created_by, bank_name, account_number, account_holder_name, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
       [
         name,
         contact_person || null,
@@ -87,6 +97,9 @@ exports.create = async (req, res, next) => {
         address || null,
         user_id || null,
         created_by,
+        bank_name || null,
+        account_number || null,
+        account_holder_name || null,
       ],
     );
     const [supplier] = await db.execute(
@@ -120,8 +133,18 @@ exports.getOne = async (req, res, next) => {
 exports.update = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, contact_person, email, phone, address, is_active, user_id } =
-      req.body;
+    const {
+      name,
+      contact_person,
+      email,
+      phone,
+      address,
+      is_active,
+      user_id,
+      bank_name,
+      account_number,
+      account_holder_name,
+    } = req.body;
     const updates = [];
     const params = [];
     if (name) {
@@ -152,6 +175,18 @@ exports.update = async (req, res, next) => {
       updates.push("user_id = ?");
       params.push(user_id);
     }
+    if (bank_name !== undefined) {
+      updates.push("bank_name = ?");
+      params.push(bank_name);
+    }
+    if (account_number !== undefined) {
+      updates.push("account_number = ?");
+      params.push(account_number);
+    }
+    if (account_holder_name !== undefined) {
+      updates.push("account_holder_name = ?");
+      params.push(account_holder_name);
+    }
     if (updates.length > 0) {
       params.push(id);
       await db.execute(
@@ -179,6 +214,66 @@ exports.delete = async (req, res, next) => {
       [req.params.id],
     );
     res.json({ message: "Supplier deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Supplier: Update own bank account information
+exports.updateBankAccount = async (req, res, next) => {
+  try {
+    const { bank_name, account_number, account_holder_name } = req.body;
+
+    // Get supplier linked to current user
+    const [suppliers] = await db.execute(
+      "SELECT id FROM suppliers WHERE user_id = ? AND deleted_at IS NULL",
+      [req.user.id],
+    );
+
+    if (suppliers.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No supplier account linked to your user" });
+    }
+
+    const supplierId = suppliers[0].id;
+
+    await db.execute(
+      `UPDATE suppliers 
+       SET bank_name = ?, account_number = ?, account_holder_name = ?
+       WHERE id = ?`,
+      [bank_name, account_number, account_holder_name, supplierId],
+    );
+
+    const [updatedSupplier] = await db.execute(
+      "SELECT * FROM suppliers WHERE id = ?",
+      [supplierId],
+    );
+
+    res.json({
+      message: "Bank account information updated successfully",
+      supplier: updatedSupplier[0],
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get supplier's own information (for logged-in supplier users)
+exports.getMySupplierInfo = async (req, res, next) => {
+  try {
+    const [suppliers] = await db.execute(
+      "SELECT * FROM suppliers WHERE user_id = ? AND deleted_at IS NULL",
+      [req.user.id],
+    );
+
+    if (suppliers.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No supplier account linked to your user" });
+    }
+
+    res.json(suppliers[0]);
   } catch (error) {
     next(error);
   }

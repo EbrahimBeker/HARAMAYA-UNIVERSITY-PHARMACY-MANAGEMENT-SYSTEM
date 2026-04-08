@@ -29,7 +29,7 @@ const PaymentReceipt = ({ isOpen, onClose, patientData, paymentData }) => {
           {/* Header */}
           <div className="text-center border-b pb-4">
             <h2 className="text-xl font-bold text-gray-900">
-              Haramaya Pharmacy
+              Haramaya University Pharmacy
             </h2>
             <p className="text-sm text-gray-600">Management System</p>
             <p className="text-xs text-gray-500">Registration Receipt</p>
@@ -116,7 +116,7 @@ const PaymentReceipt = ({ isOpen, onClose, patientData, paymentData }) => {
 
           {/* Footer */}
           <div className="border-t pt-4 text-center text-xs text-gray-500">
-            <p>Thank you for choosing Haramaya Pharmacy</p>
+            <p>Thank you for choosing Haramaya University Pharmacy</p>
             <p>Keep this receipt for your records</p>
           </div>
         </div>
